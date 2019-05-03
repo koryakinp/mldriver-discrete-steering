@@ -59,5 +59,4 @@ class PolicyGradientAgent:
         writer.add_summary(summary, step)
 
     def save_model(self, session):
-        self.saver.save(
-            session, "./checkpoints/mldriver.ckpt".format(episode))
+        self.saver.save(session, "./checkpoints/mldriver.ckpt")
