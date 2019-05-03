@@ -105,3 +105,8 @@ venv.bak/
 
 # unity environment
 mldriver-discrete-steering.app
+
+# model folders
+summaries/
+checkpoints/
+
