@@ -21,7 +21,6 @@ class Network:
                 32, (6, 6), strides=2, activation='relu')(conv1)
             conv3 = Convolution2D(32, (4, 4), activation='relu')(conv2)
             flat = Flatten()(conv3)
-            print(flat.shape)
             dense0 = Dense(256, activation=tf.nn.tanh)(flat)
             reshape = Reshape((1, 256))(dense0)
             lstm1 = LSTM(256, return_sequences=True)(reshape)
