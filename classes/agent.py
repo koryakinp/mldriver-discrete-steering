@@ -14,6 +14,7 @@ class PolicyGradientAgent:
         self.network = Network(LR)
         self.memory = Memory(BASELINE_PERIOD, GAMMA)
         self.saver = tf.train.Saver()
+        self.episode = 1
 
     def get_action(self, session, state):
         action_prob = session.run(
@@ -22,7 +23,6 @@ class PolicyGradientAgent:
         return np.random.choice([0, 1, 2], p=action_prob)
 
     def train(self, session, summ_writer):
-        episode = 1
         while True:
 
             s, done = self.env.start_episode()
@@ -35,10 +35,12 @@ class PolicyGradientAgent:
 
             self.learn(session)
             episode_rewards = sum(self.memory.rewards)
-            self.log_scalar(summ_writer, 'rewards', episode_rewards, episode)
-            print(episode_rewards)
+            self.log_scalar(
+                summ_writer, 'rewards', episode_rewards, self.episode)
+            message = 'episode: {0} | reward: {1}'
+            print(message.format(self.episode, episode_rewards))
             self.memory.clear()
-            episode = episode + 1
+            self.episode = self.episode + 1
 
             self.save_model(session)
 
@@ -47,7 +49,7 @@ class PolicyGradientAgent:
         actions = self.memory.episode_actions()
         states = np.array(self.memory.episode_states())
         states = np.squeeze(states, axis=1)
-
+        print(states.shape)
         session.run(self.network.optimizer, feed_dict={
             self.network.X: states,
             self.network.A: advantages,
