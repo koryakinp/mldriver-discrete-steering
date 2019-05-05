@@ -17,19 +17,17 @@ class Network:
             conv1 = TimeDistributed(
                 Convolution2D(
                     32,
-                    (8, 8),
+                    (4, 4),
                     activation='relu',
-                    strides=2,
                     input_shape=(1, OBS_SIZE, OBS_SIZE, 1)))(self.X)
             conv2 = TimeDistributed(
                 Convolution2D(
-                    32,
-                    (6, 6),
-                    strides=2,
+                    48,
+                    (4, 4),
                     activation='relu'))(conv1)
             conv3 = TimeDistributed(
                 Convolution2D(
-                    32,
+                    64,
                     (4, 4),
                     activation='relu'))(conv2)
             flat = TimeDistributed(Flatten())(conv3)
