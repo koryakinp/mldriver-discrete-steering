@@ -6,7 +6,7 @@ from consts import *
 
 
 class Network:
-    def __init__(self, lr):
+    def __init__(self):
         with tf.name_scope('inputs'):
             self.X = tf.placeholder(
                 tf.float32, [None, 1, OBS_SIZE, OBS_SIZE, 1], name="X")
@@ -33,9 +33,8 @@ class Network:
                     (4, 4),
                     activation='relu'))(conv2)
             flat = TimeDistributed(Flatten())(conv3)
-            lstm1 = LSTM(256, return_sequences=True)(flat)
-            lstm2 = LSTM(256)(lstm1)
-            self.logits = Dense(3, name="pred")(lstm2)
+            lstm = LSTM(256)(flat)
+            self.logits = Dense(3, name="pred")(lstm)
             self.softmax = tf.nn.softmax(self.logits)
             self.output = tf.argmax(self.logits, name="output")
 
