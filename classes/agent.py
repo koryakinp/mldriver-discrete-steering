@@ -48,7 +48,8 @@ class PolicyGradientAgent:
                 self.memory.clear()
                 self.frame_counter = 1
                 self.episode_counter += 1
-                self.save_model()
+                if self.global_step % SAVE_MODEL_STEPS == 0:
+                    self.save_model()
 
     def learn(self):
         advantages = self.memory.episode_advantage()
