@@ -130,7 +130,7 @@ RUN apt-get install -y git
 # Install Keras
 RUN pip --no-cache-dir install git+git://github.com/fchollet/keras.git
 
+RUN pip install Pillow
+
 RUN git clone https://github.com/koryakinp/mldriver-discrete-steering.git
 WORKDIR /mldriver-discrete-steering
-
-ENTRYPOINT ["python"]
