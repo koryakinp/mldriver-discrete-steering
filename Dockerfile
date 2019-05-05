@@ -128,9 +128,12 @@ EXPOSE 5005
 RUN apt-get install -y git
 
 # Install Keras
-RUN pip --no-cache-dir install git+git://github.com/fchollet/keras.git
-
 RUN pip install Pillow
+RUN pip install Keras
+RUN pip install tensorflow
 
 RUN git clone https://github.com/koryakinp/mldriver-discrete-steering.git
 WORKDIR /mldriver-discrete-steering
+COPY mldriver-discrete-steering.app mldriver-discrete-steering.app
+
+RUN pip install -e .
