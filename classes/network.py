@@ -1,6 +1,6 @@
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D
-from keras.layers import LSTM, Reshape, TimeDistributed
+from keras.layers import LSTM, Reshape, TimeDistributed, MaxPooling2D
 import tensorflow as tf
 from consts import *
 
@@ -17,20 +17,28 @@ class Network:
             conv1 = TimeDistributed(
                 Convolution2D(
                     32,
-                    (4, 4),
+                    (8, 8),
+                    strides=(2, 2),
                     activation='relu',
                     input_shape=(1, OBS_SIZE, OBS_SIZE, 1)))(self.X)
+            pool1 = TimeDistributed(
+                MaxPooling2D(pool_size=(2, 2)))(conv1)
             conv2 = TimeDistributed(
                 Convolution2D(
-                    48,
-                    (4, 4),
+                    32,
+                    (6, 6),
+                    strides=(2, 2),
                     activation='relu'))(conv1)
+            pool2 = TimeDistributed(
+                MaxPooling2D(pool_size=(2, 2)))(conv2)
             conv3 = TimeDistributed(
                 Convolution2D(
-                    64,
+                    32,
                     (4, 4),
                     activation='relu'))(conv2)
-            flat = TimeDistributed(Flatten())(conv3)
+            pool3 = TimeDistributed(
+                MaxPooling2D(pool_size=(2, 2)))(conv3)
+            flat = TimeDistributed(Flatten())(pool3)
             lstm = LSTM(256)(flat)
             self.logits = Dense(3, name="pred")(lstm)
             self.softmax = tf.nn.softmax(self.logits)
