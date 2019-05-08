@@ -14,7 +14,6 @@ class Environment:
         visual_observation = info.visual_observations[0][0]
         done = info.local_done[0]
         visual_observation = np.expand_dims(visual_observation, 0)
-        visual_observation = np.expand_dims(visual_observation, 0)
         return visual_observation
 
     def step(self, action):
@@ -22,6 +21,5 @@ class Environment:
         reward = info.rewards[0]
         visual_observation = info.visual_observations[0][0]
         done = info.local_done[0]
-        visual_observation = np.expand_dims(visual_observation, 0)
         visual_observation = np.expand_dims(visual_observation, 0)
         return reward, visual_observation, done
