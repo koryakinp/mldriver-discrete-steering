@@ -9,7 +9,8 @@ class Network:
     def __init__(self):
         with tf.name_scope('inputs'):
             self.X = tf.placeholder(
-                tf.float32, [None, OBS_SIZE, OBS_SIZE, 1], name="X")
+                tf.float32,
+                [None, OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK], name="X")
             self.Y = tf.placeholder(tf.int32, [None], name="Y")
             self.A = tf.placeholder(tf.float32, [None], name="G")
 

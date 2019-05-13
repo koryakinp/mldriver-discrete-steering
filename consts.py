@@ -5,3 +5,5 @@ BASELINE_PERIOD = 10000
 SAVE_MODEL_STEPS = 100
 ENV_NAME = "environments/mldriver-discrete-steering"
 CHECKPOINT_FILE = "./checkpoints/mldriver.ckpt"
+FRAMES_LOOKBACK = 5
+FRAMES_SKIP = 3

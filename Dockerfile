@@ -138,4 +138,3 @@ COPY environments environments
 
 RUN pip install -e .
 RUN mkdir -p summaries/rewards
-ENTRYPOINT ["python"] ["main.py"]

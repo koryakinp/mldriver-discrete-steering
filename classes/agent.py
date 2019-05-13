@@ -10,17 +10,18 @@ from PIL import Image
 
 class PolicyGradientAgent:
 
-    def __init__(self, env, session, network):
+    def __init__(self, env, session, network, experiment_id):
         self.env = env
         self.network = network
-        self.memory = Memory(BASELINE_PERIOD, GAMMA)
+        self.memory = Memory()
         self.saver = tf.train.Saver()
         self.frame_counter = 0
         self.episode_counter = 0
         self.global_step = 0
         self.session = session
         self.summ_writer = tf.summary.FileWriter(
-            os.path.join('summaries', 'rewards'), self.session.graph)
+            os.path.join('summaries', experiment_id, 'rewards'),
+            self.session.graph)
 
     def get_action(self, state):
         action_prob = self.session.run(
@@ -30,17 +31,21 @@ class PolicyGradientAgent:
 
     def train(self, save_frames=False):
 
-        s = self.env.start_episode()
+        frame = self.env.start_episode()
+        self.memory.fill_transition(frame)
 
         while True:
+            frame_prev = frame
+            s = self.memory.get_state()
+            print(s.shape)
             a = self.get_action(s)
-            s_prev = s
-            r, s, done = self.env.step([a])
-            self.memory.save(a, r, s_prev)
+            r, frame, done = self.env.step([a])
+            self.memory.save(a, r, frame_prev)
             self.frame_counter += 1
             self.global_step += 1
+
             if save_frames:
-                self.save_frame(s)
+                self.save_frame(frame)
 
             if done:
                 self.learn()
@@ -54,8 +59,7 @@ class PolicyGradientAgent:
     def learn(self):
         advantages = self.memory.episode_advantage()
         actions = self.memory.episode_actions()
-        states = np.array(self.memory.episode_states())
-        states = np.squeeze(states, axis=1)
+        states = self.memory.episode_states()
         self.session.run(self.network.optimizer, feed_dict={
             self.network.X: states,
             self.network.A: advantages,
@@ -68,8 +72,11 @@ class PolicyGradientAgent:
         frame = np.squeeze(s)
         frame = (frame * 255).astype(np.uint8)
         im = Image.fromarray(frame, 'L')
-        im.save('sample-episodes/foo{0}-{1}.jpeg'.format(
-            self.episode_counter, self.frame_counter))
+        filename = 'episode{0}-frame{1}.jpeg'.format(
+            self.episode_counter, self.frame_counter)
+        fullpath = os.path.join(
+            'summaries', experiment_id, 'sample-episodes', filename)
+        im.save(fullpath)
 
     def log_progress(self):
         episode_rewards = sum(self.memory.rewards)

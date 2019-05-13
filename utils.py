@@ -1,17 +1,21 @@
 import sys
 import os
 import tensorflow as tf
+import uuid
 
 
 def create_folders():
     if not os.path.exists('summaries'):
         os.mkdir('summaries')
-    if not os.path.exists('checkpoints'):
-        os.mkdir('checkpoints')
-    if not os.path.exists(os.path.join('summaries', 'rewards')):
-        os.mkdir(os.path.join('summaries', 'rewards'))
-    if not os.path.exists('sample-episodes'):
-        os.mkdir('sample-episodes')
+
+    experiment_id = str(uuid.uuid4())
+
+    os.mkdir(os.path.join('summaries', experiment_id))
+    os.mkdir(os.path.join('summaries', experiment_id, 'rewards'))
+    os.mkdir(os.path.join('summaries', experiment_id, 'checkpoints'))
+    os.mkdir(os.path.join('summaries', experiment_id, 'sample-episodes'))
+
+    return experiment_id
 
 
 def get_session():
