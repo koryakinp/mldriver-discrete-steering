@@ -19,6 +19,7 @@ class PolicyGradientAgent:
         self.episode_counter = 0
         self.global_step = 0
         self.session = session
+        self.experiment_id = experiment_id
         self.summ_writer = tf.summary.FileWriter(
             os.path.join('summaries', experiment_id, 'rewards'),
             self.session.graph)
@@ -37,7 +38,6 @@ class PolicyGradientAgent:
         while True:
             frame_prev = frame
             s = self.memory.get_state()
-            print(s.shape)
             a = self.get_action(s)
             r, frame, done = self.env.step([a])
             self.memory.save(a, r, frame_prev)
@@ -45,7 +45,7 @@ class PolicyGradientAgent:
             self.global_step += 1
 
             if save_frames:
-                self.save_frame(frame)
+                self.save_block(s)
 
             if done:
                 self.learn()
@@ -68,14 +68,17 @@ class PolicyGradientAgent:
     def save_model(self):
         self.saver.save(self.session, CHECKPOINT_FILE)
 
-    def save_frame(self, s):
-        frame = np.squeeze(s)
+    def save_block(self, s):
+        for i in range(0, FRAMES_LOOKBACK):
+            self.save_frame(np.squeeze(s)[:, :, i], i)
+
+    def save_frame(self, frame, slice):
         frame = (frame * 255).astype(np.uint8)
         im = Image.fromarray(frame, 'L')
-        filename = 'episode{0}-frame{1}.jpeg'.format(
-            self.episode_counter, self.frame_counter)
+        filename = 'episode{0}-frame{1}-slice{2}.jpeg'.format(
+            self.episode_counter, self.frame_counter, slice)
         fullpath = os.path.join(
-            'summaries', experiment_id, 'sample-episodes', filename)
+            'summaries', self.experiment_id, 'sample-episodes', filename)
         im.save(fullpath)
 
     def log_progress(self):

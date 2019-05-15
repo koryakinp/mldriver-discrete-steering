@@ -6,7 +6,7 @@ from consts import *
 
 class Environment:
     def __init__(self):
-        self.env = UnityEnvironment(file_name=ENV_NAME, worker_id=5)
+        self.env = UnityEnvironment(file_name=ENV_NAME, worker_id=1)
         self.default_brain = self.env.brain_names[0]
 
     def start_episode(self):

@@ -26,10 +26,9 @@ class Network:
             pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
             flat = Flatten()(pool3)
 
-            dense1 = Dense(256, activation='relu')(flat)
-            dense2 = Dense(256, activation='relu')(dense1)
+            dense = Dense(256, activation='relu')(flat)
 
-            self.logits = Dense(3, name="pred")(dense2)
+            self.logits = Dense(3, name="pred")(dense)
             self.softmax = tf.nn.softmax(self.logits)
             self.output = tf.argmax(self.logits, name="output")
 
