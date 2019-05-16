@@ -35,7 +35,7 @@ class Network:
         with tf.name_scope('loss'):
             neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(
                 logits=self.logits, labels=self.Y)
-            loss = tf.reduce_mean(neg_log_prob * self.A)
+            loss = neg_log_prob * self.A
 
         with tf.name_scope('train'):
             self.optimizer = tf.train.AdamOptimizer(LR).minimize(loss)
