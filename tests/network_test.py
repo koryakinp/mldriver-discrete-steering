@@ -8,8 +8,8 @@ from consts import *
 class Test_Netowrk(unittest.TestCase):
 
     def test_forward(self):
-        network = Network(LR)
-        x = np.random.rand(1, OBS_SIZE, OBS_SIZE, OBS_DEPTH)
+        network = Network()
+        x = np.random.rand(1, OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK)
         y = np.array([0, 1, 0])
         session = tf.Session()
         session.run(tf.global_variables_initializer())
@@ -20,8 +20,8 @@ class Test_Netowrk(unittest.TestCase):
         self.assertTrue(True)
 
     def test_backward(self):
-        network = Network(LR)
-        x = np.random.rand(3, OBS_SIZE, OBS_SIZE, OBS_DEPTH)
+        network = Network()
+        x = np.random.rand(3, OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK)
         y = np.array([0, 1, 0])
         a = np.random.rand(3)
         session = tf.Session()

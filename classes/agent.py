@@ -1,6 +1,5 @@
 from consts import *
 from classes.memory import Memory
-from classes.network import Network
 import numpy as np
 import tensorflow as tf
 import os
@@ -10,10 +9,12 @@ from PIL import Image
 
 class PolicyGradientAgent:
 
-    def __init__(self, env, session, network, experiment_id):
+    def __init__(
+            self, env, session, value_network, policy_network, experiment_id):
         self.env = env
-        self.network = network
-        self.memory = Memory()
+        self.value_network = value_network
+        self.policy_network = policy_network
+        self.memory = Memory(FRAMES_LOOKBACK, FRAMES_SKIP, GAMMA)
         self.saver = tf.train.Saver()
         self.frame_counter = 0
         self.episode_counter = 0
@@ -25,8 +26,7 @@ class PolicyGradientAgent:
             self.session.graph)
 
     def get_action(self, state):
-        action_prob = self.session.run(
-          self.network.softmax, feed_dict={self.network.X: state})
+        action_prob = self.policy_network.get_action_prob(self.session, state)
         action_prob = np.squeeze(action_prob)
         return np.random.choice([0, 1, 2], p=action_prob)
 
@@ -48,8 +48,9 @@ class PolicyGradientAgent:
                 self.save_block(s)
 
             if done:
-                self.learn()
-                self.log_progress()
+                rewards, policy_loss, value_loss = self.learn()
+                self.log_progress(
+                    rewards, np.mean(policy_loss), np.mean(value_loss))
                 self.memory.clear()
                 self.frame_counter = 1
                 self.episode_counter += 1
@@ -57,13 +58,25 @@ class PolicyGradientAgent:
                     self.save_model()
 
     def learn(self):
-        advantages = self.memory.episode_advantage()
+        episode_rewards = self.memory.episode_rewards()
         actions = self.memory.episode_actions()
         states = self.memory.episode_states()
-        self.session.run(self.network.optimizer, feed_dict={
-            self.network.X: states,
-            self.network.A: advantages,
-            self.network.Y: actions})
+
+        mean = np.mean(episode_rewards)
+        std = np.std(episode_rewards)
+        episode_rewards = (episode_rewards - std) / mean
+
+        value_estimation = self.value_network.get_value(self.session, states)
+        value_estimation = np.squeeze(np.array(value_estimation))
+
+        advantages = episode_rewards - value_estimation
+
+        policy_loss = self.policy_network.update(
+            self.session, states, actions, advantages)
+        value_loss = self.value_network.update(
+            self.session, states, episode_rewards)
+
+        return sum(self.memory.episode_rewards()), policy_loss, value_loss
 
     def save_model(self):
         self.saver.save(self.session, CHECKPOINT_FILE)
@@ -81,14 +94,23 @@ class PolicyGradientAgent:
             'summaries', self.experiment_id, 'sample-episodes', filename)
         im.save(fullpath)
 
-    def log_progress(self):
-        episode_rewards = sum(self.memory.rewards)
-        summary = tf.Summary(
+    def log_progress(self, rewards, policy_loss, value_loss):
+        summary_rewards = tf.Summary(
             value=[tf.Summary.Value(
-                tag='rewards', simple_value=episode_rewards)])
-        self.summ_writer.add_summary(summary, self.global_step)
+                tag='rewards', simple_value=rewards)])
+
+        summary_policy_loss = tf.Summary(
+            value=[tf.Summary.Value(
+                tag='policy_loss', simple_value=policy_loss)])
+
+        summary_value_loss = tf.Summary(
+            value=[tf.Summary.Value(
+                tag='value_loss', simple_value=value_loss)])
+
+        self.summ_writer.add_summary(summary_rewards, self.global_step)
+        self.summ_writer.add_summary(summary_policy_loss, self.global_step)
+        self.summ_writer.add_summary(summary_value_loss, self.global_step)
+
         message = 'episode: {0} | frames: {1} | reward: {2}'
-        print(message.format(
-            self.episode_counter,
-            self.frame_counter,
-            episode_rewards))
+        print(
+            message.format(self.episode_counter, self.frame_counter, rewards))

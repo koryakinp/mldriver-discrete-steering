@@ -1,7 +1,7 @@
 OBS_SIZE = 128
-GAMMA = 0.95
-LR = 0.001
-BASELINE_PERIOD = 10000
+GAMMA = 0.99
+VALUE_NETWORK_LR = 0.001
+POLICY_NETWORK_LR = 0.001
 SAVE_MODEL_STEPS = 100
 ENV_NAME = "environments/mldriver-discrete-steering"
 CHECKPOINT_FILE = "./checkpoints/mldriver.ckpt"

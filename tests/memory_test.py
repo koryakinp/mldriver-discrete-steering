@@ -1,17 +1,18 @@
 import unittest
 from classes.memory import Memory
+import numpy as np
 
 
 class Test_Memory(unittest.TestCase):
     def test_baseline1(self):
-        memory = Memory(3, 0.9)
+        memory = Memory(3, 10, 10, 10)
         memory.save(None, 1.0, None)
         memory.save(None, 2.0, None)
         memory.save(None, 3.0, None)
         self.assertEqual(memory.baseline(), 2.0)
 
     def test_baseline2(self):
-        memory = Memory(3, 0.9)
+        memory = Memory(3, 10, 10, 10)
         memory.save(None, 1.0, None)
         memory.save(None, 2.0, None)
         memory.save(None, 3.0, None)
@@ -20,7 +21,7 @@ class Test_Memory(unittest.TestCase):
         self.assertEqual(memory.baseline(), 4.0)
 
     def test_baseline3(self):
-        memory = Memory(3, 0.9)
+        memory = Memory(10, 10, 10, 10)
         memory.save(None, 1.0, None)
         memory.save(None, 2.0, None)
         self.assertEqual(memory.baseline(), 1.5)
@@ -70,7 +71,7 @@ class Test_Memory(unittest.TestCase):
 
 
 def create_memory():
-    memory = Memory(100, 0.9)
+    memory = Memory(100, 10, 10, 0.9)
     memory.save(None, 11.0, None)
     memory.save(None, 8.0, None)
     memory.save(None, 13.0, None)
