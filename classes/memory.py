@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Memory:
-    def __init__(self, frames_lookback, frames_skip, gamma):
+    def __init__(self, frames_lookback, frames_skip, gamma, memory_size):
         self.actions = []
         self.rewards = []
         self.states = []
@@ -12,12 +12,16 @@ class Memory:
         self.frames_skip = frames_skip
         self.frames_lookback = frames_lookback
         self.gamma = gamma
+        self.experience_memory_states = deque(maxlen=memory_size)
+        self.experience_memory_rewards = deque(maxlen=memory_size)
 
     def save(self, a, r, s):
         self.actions.append(a)
         self.rewards.append(r)
         self.transition.append(s)
         self.states.append(np.array(self.transition)[::self.frames_skip + 1])
+        self.experience_memory_states.append(self.get_state())
+        self.experience_memory_rewards.append(r)
 
     def fill_transition(self, s):
         for i in range(0, self.transition.maxlen):
@@ -48,3 +52,10 @@ class Memory:
         arr = np.array(self.transition)
         arr = arr[::self.frames_skip + 1]
         return np.transpose(arr, (3, 1, 2, 0))
+
+    def sample_from_experiences(self, size):
+        indexes = np.random.choice(
+            len(self.experience_memory_states), size, replace=False)
+        states = np.array(self.experience_memory_states)[indexes]
+        rewards = np.array(self.experience_memory_rewards)[indexes]
+        return np.squeeze(states), rewards

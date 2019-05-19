@@ -14,7 +14,7 @@ class PolicyGradientAgent:
         self.env = env
         self.value_network = value_network
         self.policy_network = policy_network
-        self.memory = Memory(FRAMES_LOOKBACK, FRAMES_SKIP, GAMMA)
+        self.memory = Memory(FRAMES_LOOKBACK, FRAMES_SKIP, GAMMA, MEMORY_SIZE)
         self.saver = tf.train.Saver()
         self.frame_counter = 0
         self.episode_counter = 0
@@ -73,8 +73,11 @@ class PolicyGradientAgent:
 
         policy_loss = self.policy_network.update(
             self.session, states, actions, advantages)
+
+        states, rewards = self.memory.sample_from_experiences(len(states))
+
         value_loss = self.value_network.update(
-            self.session, states, episode_rewards)
+            self.session, states, rewards)
 
         return sum(self.memory.episode_rewards()), policy_loss, value_loss
 
@@ -107,9 +110,9 @@ class PolicyGradientAgent:
             value=[tf.Summary.Value(
                 tag='value_loss', simple_value=value_loss)])
 
-        self.summ_writer.add_summary(summary_rewards, self.global_step)
-        self.summ_writer.add_summary(summary_policy_loss, self.global_step)
-        self.summ_writer.add_summary(summary_value_loss, self.global_step)
+        self.summ_writer.add_summary(summary_rewards, self.episode_counter)
+        self.summ_writer.add_summary(summary_policy_loss, self.episode_counter)
+        self.summ_writer.add_summary(summary_value_loss, self.episode_counter)
 
         message = 'episode: {0} | frames: {1} | reward: {2}'
         print(
