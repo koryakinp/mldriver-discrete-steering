@@ -25,7 +25,6 @@ class PolicyNetwork:
             dense = Dense(256, activation='relu')(flat)
             self.logits = Dense(3, name="pred")(dense)
             self.softmax = tf.nn.softmax(self.logits)
-            self.output = tf.argmax(self.logits, name="output")
 
         with tf.name_scope('policy_loss'):
             neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(

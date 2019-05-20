@@ -38,7 +38,10 @@ class Memory:
             total = sum(
                 self.gamma**i * r for i, r in enumerate(self.rewards[t:]))
             episode_rewards.append(total)
-        return episode_rewards
+
+        mean = np.mean(episode_rewards)
+        std = np.std(episode_rewards)
+        return (episode_rewards - std) / mean
 
     def episode_states(self):
         arr = np.array(self.states)

@@ -62,10 +62,6 @@ class PolicyGradientAgent:
         actions = self.memory.episode_actions()
         states = self.memory.episode_states()
 
-        mean = np.mean(episode_rewards)
-        std = np.std(episode_rewards)
-        episode_rewards = (episode_rewards - std) / mean
-
         value_estimation = self.value_network.get_value(self.session, states)
         value_estimation = np.squeeze(np.array(value_estimation))
 
@@ -74,10 +70,9 @@ class PolicyGradientAgent:
         policy_loss = self.policy_network.update(
             self.session, states, actions, advantages)
 
-        states, rewards = self.memory.sample_from_experiences(len(states))
+        s, r = self.memory.sample_from_experiences(len(states))
 
-        value_loss = self.value_network.update(
-            self.session, states, rewards)
+        value_loss = self.value_network.update(self.session, s, r)
 
         return sum(self.memory.episode_rewards()), policy_loss, value_loss
 
