@@ -7,4 +7,4 @@ ENV_NAME = "environments/mldriver-discrete-steering"
 CHECKPOINT_FILE = "./checkpoints/mldriver.ckpt"
 FRAMES_LOOKBACK = 5
 FRAMES_SKIP = 3
-MEMORY_SIZE = 10000
+MEMORY_SIZE = 1000
