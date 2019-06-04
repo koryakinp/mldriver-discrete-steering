@@ -62,13 +62,15 @@ class PolicyGradientAgent:
 
             print('=======')
 
-            self.global_step += 1
-
-            if(self.global_step % SAVE_MODEL_STEPS):
+            if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.save_model()
 
+            self.global_step += 1
+
     def save_model(self):
-        self.saver.save(self.sess, CHECKPOINT_FILE)
+        path = os.path.join(
+            'summaries', self.experiment_id, 'checkpoints', CHECKPOINT_FILE)
+        self.saver.save(self.sess, path, self.global_step)
 
     def log_scalar(self, tag, value, step):
         summary = tf.Summary(

@@ -16,7 +16,7 @@ def create_folders():
     experiment_id = str(uuid.uuid4())
 
     os.mkdir(os.path.join('summaries', experiment_id))
-    os.mkdir(os.path.join('summaries', 'sample-episodes'))
+    os.mkdir(os.path.join('summaries', experiment_id, 'checkpoints'))
 
     return experiment_id
 
