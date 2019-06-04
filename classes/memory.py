@@ -1,64 +1,66 @@
 from collections import deque
+from classes.transition import Transition
+from consts import *
 import numpy as np
+import tensorflow as tf
 
 
 class Memory:
-    def __init__(self, frames_lookback, frames_skip, gamma, memory_size):
-        self.actions = []
-        self.rewards = []
-        self.states = []
-        queue_size = frames_lookback + (frames_lookback - 1) * frames_skip
-        self.transition = deque(maxlen=queue_size)
-        self.frames_skip = frames_skip
-        self.frames_lookback = frames_lookback
-        self.gamma = gamma
-        self.experience_memory_states = deque(maxlen=memory_size)
-        self.experience_memory_rewards = deque(maxlen=memory_size)
+    def __init__(self):
+        self.transitions = np.array([], dtype=object)
+        self.best_score = 0
+        self.cur_score = 0
+        self.best_run = np.empty([1, OBS_SIZE, OBS_SIZE])
+        self.cur_run = np.empty([1, OBS_SIZE, OBS_SIZE])
 
-    def save(self, a, r, s):
-        self.actions.append(a)
-        self.rewards.append(r)
-        self.transition.append(s)
-        self.states.append(np.array(self.transition)[::self.frames_skip + 1])
-        self.experience_memory_states.append(self.get_state())
-        self.experience_memory_rewards.append(r)
+    def save(self, s, a, r, done, v):
+        transition = Transition(s, a, r, v, done)
+        self.transitions = np.append(self.transitions, transition)
 
-    def fill_transition(self, s):
-        for i in range(0, self.transition.maxlen):
-            self.transition.append(s)
+        if done:
+            if self.cur_score > self.best_score:
+                self.best_score = self.cur_score
+                self.best_run = self.cur_run
+
+            self.cur_score = 0
+            self.cur_run = np.empty([1, OBS_SIZE, OBS_SIZE])
+
+        self.cur_score += r
+
+        frame = s[:, :, :, FRAMES_LOOKBACK - 1]
+        self.cur_run = np.append(self.cur_run, frame, axis=0)
+
+    def compute_true_value(self):
+        temp = 0
+        for transition in self.transitions[::-1]:
+            is_done = 0 if transition.done else 1
+            transition.true_value = transition.reward + temp * GAMMA * is_done
+            temp = transition.true_value
+
+    def get_rollout(self):
+        advantages = [transition.A() for transition in self.transitions]
+        values = [transition.true_value for transition in self.transitions]
+        states = [transition.state for transition in self.transitions]
+        actions = [transition.action for transition in self.transitions]
+        rewards = [transition.reward for transition in self.transitions]
+
+        states = np.array(states).squeeze()
+
+        return advantages, values, states, actions, rewards
+
+    def get_best(self):
+        bs = self.best_score
+        br = self.best_run
+        br = np.expand_dims(br, axis=3)
+        br = br * 255
+        br = br.astype(np.uint8)
+        br = tf.convert_to_tensor(br)
+
+        return bs, br
 
     def clear(self):
-        self.actions = []
-        self.rewards = []
-        self.states = []
-
-    def episode_rewards(self):
-        episode_rewards = []
-        for t in range(len(self.rewards)):
-            total = sum(
-                self.gamma**i * r for i, r in enumerate(self.rewards[t:]))
-            episode_rewards.append(total)
-
-        mean = np.mean(episode_rewards)
-        std = np.std(episode_rewards)
-        return (episode_rewards - std) / mean
-
-    def episode_states(self):
-        arr = np.array(self.states)
-        arr = np.transpose(arr, (0, 4, 2, 3, 1))
-        return np.squeeze(arr)
-
-    def episode_actions(self):
-        return self.actions
-
-    def get_state(self):
-        arr = np.array(self.transition)
-        arr = arr[::self.frames_skip + 1]
-        return np.transpose(arr, (3, 1, 2, 0))
-
-    def sample_from_experiences(self, size):
-        indexes = np.random.choice(
-            len(self.experience_memory_states), size, replace=False)
-        states = np.array(self.experience_memory_states)[indexes]
-        rewards = np.array(self.experience_memory_rewards)[indexes]
-        return np.squeeze(states), rewards
+        self.transitions = np.array([], dtype=object)
+        self.best_score = 0
+        self.cur_score = 0
+        self.best_run = np.empty([1, OBS_SIZE, OBS_SIZE])
+        self.cur_run = np.empty([1, OBS_SIZE, OBS_SIZE])

@@ -1,114 +1,79 @@
 from consts import *
 from classes.memory import Memory
+from classes.policy import Policy
+from utils import tensor_to_gif_summ
 import numpy as np
 import tensorflow as tf
 import os
 import os.path as path
-from PIL import Image
 
 
 class PolicyGradientAgent:
 
     def __init__(
-            self, env, session, value_network, policy_network, experiment_id):
+            self, env, sess, experiment_id):
         self.env = env
-        self.value_network = value_network
-        self.policy_network = policy_network
-        self.memory = Memory(FRAMES_LOOKBACK, FRAMES_SKIP, GAMMA, MEMORY_SIZE)
+        self.memory = Memory()
+        self.sess = sess
+        self.policy = Policy(
+            sess, [OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK], NUMBER_OF_ACTIONS)
+        self.global_step = 1
         self.saver = tf.train.Saver()
-        self.frame_counter = 0
-        self.episode_counter = 0
-        self.global_step = 0
-        self.session = session
         self.experiment_id = experiment_id
         self.summ_writer = tf.summary.FileWriter(
-            os.path.join('summaries', experiment_id, 'rewards'),
-            self.session.graph)
+            os.path.join('summaries', experiment_id), sess.graph)
 
-    def get_action(self, state):
-        action_prob = self.policy_network.get_action_prob(self.session, state)
-        action_prob = np.squeeze(action_prob)
-        return np.random.choice([0, 1, 2], p=action_prob)
+    def play_policy(self):
+        batch_episode_counter = 0
+        state = self.env.start_episode()
 
-    def train(self, save_frames=False):
-
-        frame = self.env.start_episode()
-        self.memory.fill_transition(frame)
-
-        while True:
-            frame_prev = frame
-            s = self.memory.get_state()
-            a = self.get_action(s)
-            r, frame, done = self.env.step([a])
-            self.memory.save(a, r, frame_prev)
-            self.frame_counter += 1
-            self.global_step += 1
-
-            if save_frames:
-                self.save_block(s)
-
+        while batch_episode_counter < BUFFER_SIZE:
+            a, v = self.policy.step(state)
+            r, next_state, done = self.env.step(a)
+            self.memory.save(state, a, r, done, v)
+            state = next_state
             if done:
-                rewards, policy_loss, value_loss = self.learn()
-                self.log_progress(
-                    rewards, np.mean(policy_loss), np.mean(value_loss))
-                self.memory.clear()
-                self.frame_counter = 1
-                self.episode_counter += 1
-                if self.global_step % SAVE_MODEL_STEPS == 0:
-                    self.save_model()
+                batch_episode_counter += 1
+
+        self.memory.compute_true_value()
+        advs, values, states, acts, rewards = self.memory.get_rollout()
+        return advs, values, states, acts, rewards
 
     def learn(self):
-        episode_rewards = self.memory.episode_rewards()
-        actions = self.memory.episode_actions()
-        states = self.memory.episode_states()
+        while True:
+            advantages, values, states, actions, rewards = self.play_policy()
+            best_score, best_run = self.memory.get_best()
+            self.memory.clear()
 
-        value_estimation = self.value_network.get_value(self.session, states)
-        value_estimation = np.squeeze(np.array(value_estimation))
+            vl, pl = self.policy.optimize(states, actions, values, advantages)
 
-        advantages = episode_rewards - value_estimation
+            episode_len = len(actions)/BUFFER_SIZE
+            episode_reward = sum(rewards)/BUFFER_SIZE
 
-        policy_loss = self.policy_network.update(
-            self.session, states, actions, advantages)
+            self.log_scalar('value_loss', vl, self.global_step)
+            self.log_scalar('policy_loss', pl, self.global_step)
+            self.log_scalar('episode_length', episode_len, self.global_step)
+            self.log_scalar('episode_reward', episode_reward, self.global_step)
 
-        s, r = self.memory.sample_from_experiences(len(states))
+            self.log_gif('best_run', best_run, self.global_step)
 
-        value_loss = self.value_network.update(self.session, s, r)
+            print('=======')
 
-        return sum(self.memory.episode_rewards()), policy_loss, value_loss
+            self.global_step += 1
+
+            if(self.global_step % SAVE_MODEL_STEPS):
+                self.save_model()
 
     def save_model(self):
-        self.saver.save(self.session, CHECKPOINT_FILE)
+        self.saver.save(self.sess, CHECKPOINT_FILE)
 
-    def save_block(self, s):
-        for i in range(0, FRAMES_LOOKBACK):
-            self.save_frame(np.squeeze(s)[:, :, i], i)
+    def log_scalar(self, tag, value, step):
+        summary = tf.Summary(
+            value=[tf.Summary.Value(tag=tag, simple_value=value)])
+        self.summ_writer.add_summary(summary, step)
+        print('episode: {0} | {1}: {2}'.format(step, tag, value))
 
-    def save_frame(self, frame, slice):
-        frame = (frame * 255).astype(np.uint8)
-        im = Image.fromarray(frame, 'L')
-        filename = 'episode{0}-frame{1}-slice{2}.jpeg'.format(
-            self.episode_counter, self.frame_counter, slice)
-        fullpath = os.path.join(
-            'summaries', self.experiment_id, 'sample-episodes', filename)
-        im.save(fullpath)
-
-    def log_progress(self, rewards, policy_loss, value_loss):
-        summary_rewards = tf.Summary(
-            value=[tf.Summary.Value(
-                tag='rewards', simple_value=rewards)])
-
-        summary_policy_loss = tf.Summary(
-            value=[tf.Summary.Value(
-                tag='policy_loss', simple_value=policy_loss)])
-
-        summary_value_loss = tf.Summary(
-            value=[tf.Summary.Value(
-                tag='value_loss', simple_value=value_loss)])
-
-        self.summ_writer.add_summary(summary_rewards, self.episode_counter)
-        self.summ_writer.add_summary(summary_policy_loss, self.episode_counter)
-        self.summ_writer.add_summary(summary_value_loss, self.episode_counter)
-
-        message = 'episode: {0} | frames: {1} | reward: {2}'
-        print(
-            message.format(self.episode_counter, self.frame_counter, rewards))
+    def log_gif(self, tag, images, step):
+        tensor_summ = tf.summary.tensor_summary(tag, images)
+        tensor_value = self.sess.run(tensor_summ)
+        self.summ_writer.add_summary(tensor_to_gif_summ(tensor_value), step)

@@ -8,6 +8,7 @@ RUN apt-get install -y git
 
 RUN pip install Pillow
 RUN pip install Keras
+RUN pip install moviepy
 
 RUN git clone https://github.com/koryakinp/mldriver-discrete-steering.git
 WORKDIR /mldriver-discrete-steering
