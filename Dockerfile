@@ -15,4 +15,4 @@ WORKDIR /mldriver-discrete-steering
 COPY environments environments
 RUN pip install -e .
 
-ENTRYPOINT [ 'xvfb-run -a -s "-screen 0 128x128x24" -- python main.py' ] 
+CMD [ 'xvfb-run -a -s "-screen 0 128x128x24" -- python main.py' ] 
