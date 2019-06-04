@@ -1,21 +1,19 @@
 from mlagents.envs import UnityEnvironment
 from collections import deque
 from consts import *
-from PIL import Image
-import os
-import os.path as path
 import numpy as np
 
 
 class Environment:
     def __init__(self, frames_lookback, frames_skip, experiment_id):
         self.experiment_id = experiment_id
-        self.env = UnityEnvironment(file_name=ENV_NAME, worker_id=2)
+        self.env = UnityEnvironment(file_name=ENV_NAME, worker_id=3)
         self.frames_skip = frames_skip
         self.frames_lookback = frames_lookback
         self.default_brain = self.env.brain_names[0]
         queue_size = frames_lookback + (frames_lookback - 1) * frames_skip
         self.state = deque(maxlen=queue_size)
+        self.frame_counter = 1
 
     def start_episode(self):
         info = self.env.reset(train_mode=True)[self.default_brain]

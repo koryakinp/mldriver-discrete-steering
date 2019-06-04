@@ -10,12 +10,17 @@ class Memory:
         self.transitions = np.array([], dtype=object)
         self.best_score = 0
         self.cur_score = 0
-        self.best_run = np.empty([1, OBS_SIZE, OBS_SIZE])
-        self.cur_run = np.empty([1, OBS_SIZE, OBS_SIZE])
+        self.best_run = np.empty((0, OBS_SIZE, OBS_SIZE))
+        self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
 
     def save(self, s, a, r, done, v):
         transition = Transition(s, a, r, v, done)
         self.transitions = np.append(self.transitions, transition)
+
+        self.cur_score += r
+
+        frame = s[:, :, :, FRAMES_LOOKBACK - 1]
+        self.cur_run = np.append(self.cur_run, frame, axis=0)
 
         if done:
             if self.cur_score > self.best_score:
@@ -23,12 +28,7 @@ class Memory:
                 self.best_run = self.cur_run
 
             self.cur_score = 0
-            self.cur_run = np.empty([1, OBS_SIZE, OBS_SIZE])
-
-        self.cur_score += r
-
-        frame = s[:, :, :, FRAMES_LOOKBACK - 1]
-        self.cur_run = np.append(self.cur_run, frame, axis=0)
+            self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
 
     def compute_true_value(self):
         temp = 0
@@ -62,5 +62,5 @@ class Memory:
         self.transitions = np.array([], dtype=object)
         self.best_score = 0
         self.cur_score = 0
-        self.best_run = np.empty([1, OBS_SIZE, OBS_SIZE])
-        self.cur_run = np.empty([1, OBS_SIZE, OBS_SIZE])
+        self.best_run = np.empty((0, OBS_SIZE, OBS_SIZE))
+        self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))

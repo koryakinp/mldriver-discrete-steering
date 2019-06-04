@@ -22,6 +22,7 @@ class PolicyGradientAgent:
         self.experiment_id = experiment_id
         self.summ_writer = tf.summary.FileWriter(
             os.path.join('summaries', experiment_id), sess.graph)
+        self.record_score = 0
 
     def play_policy(self):
         batch_episode_counter = 0
@@ -55,7 +56,9 @@ class PolicyGradientAgent:
             self.log_scalar('episode_length', episode_len, self.global_step)
             self.log_scalar('episode_reward', episode_reward, self.global_step)
 
-            self.log_gif('best_run', best_run, self.global_step)
+            if best_score > self.record_score:
+                self.log_gif('best_run', best_run, self.global_step)
+                self.record_score = best_score
 
             print('=======')
 

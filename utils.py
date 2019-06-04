@@ -5,6 +5,8 @@ import tempfile
 import moviepy.editor as mpy
 import numpy as np
 import uuid
+from PIL import Image
+import os.path as path
 
 
 def create_folders():
@@ -14,6 +16,7 @@ def create_folders():
     experiment_id = str(uuid.uuid4())
 
     os.mkdir(os.path.join('summaries', experiment_id))
+    os.mkdir(os.path.join('summaries', 'sample-episodes'))
 
     return experiment_id
 
@@ -67,3 +70,18 @@ def tensor_to_gif_summ(summ):
         image.encoded_image_string = encoded_image_string
         summary.value.add(tag=tag, image=image)
     return summary
+
+
+def save_frame(frame, frame_counter, folder):
+    frame = np.squeeze(frame)
+    frame = (frame * 255).astype(np.uint8)
+    im = Image.fromarray(frame, 'L')
+    filename = 'frame_{0}.jpeg'.format(frame_counter)
+
+    folder_path = os.path.join('summaries', 'sample-episodes', folder)
+
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+
+    fullpath = os.path.join(folder_path, filename)
+    im.save(fullpath)
