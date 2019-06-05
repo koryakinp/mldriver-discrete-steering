@@ -15,3 +15,5 @@ WORKDIR /mldriver-discrete-steering
 COPY environments environments
 RUN pip install -e .
 RUN mkdir summaries
+RUN chmod 755 runner.sh
+CMD ./runner.sh
