@@ -7,7 +7,7 @@ import numpy as np
 class Environment:
     def __init__(self, frames_lookback, frames_skip, experiment_id):
         self.experiment_id = experiment_id
-        self.env = UnityEnvironment(file_name=ENV_NAME, worker_id=3)
+        self.env = UnityEnvironment(file_name=ENV_NAME, worker_id=5)
         self.frames_skip = frames_skip
         self.frames_lookback = frames_lookback
         self.default_brain = self.env.brain_names[0]
