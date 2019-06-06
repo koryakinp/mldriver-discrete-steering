@@ -7,11 +7,6 @@ import numpy as np
 import uuid
 from PIL import Image
 import os.path as path
-import shutil
-
-
-def clear():
-    shutil.rmtree('summaries')
 
 
 def create_folders():
@@ -46,7 +41,7 @@ def tensor_to_gif_summ(summ):
             raise ValueError('Tensors must have 3 channels.')
 
         # encode sequence of images into gif string
-        clip = mpy.ImageSequenceClip(list(images_arr), fps=10)
+        clip = mpy.ImageSequenceClip(list(images_arr), fps=30)
         with tempfile.NamedTemporaryFile() as f:
             filename = f.name + '.gif'
         clip.write_gif(filename, verbose=False)
