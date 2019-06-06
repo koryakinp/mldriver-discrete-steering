@@ -70,7 +70,8 @@ class PolicyGradientAgent:
     def save_model(self):
         path = os.path.join(
             'summaries', self.experiment_id, 'checkpoints', CHECKPOINT_FILE)
-        self.saver.save(self.sess, path, self.global_step)
+        self.saver.save(
+            self.sess, path, self.global_step, write_meta_graph=False)
 
     def log_scalar(self, tag, value, step):
         summary = tf.Summary(

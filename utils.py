@@ -7,6 +7,11 @@ import numpy as np
 import uuid
 from PIL import Image
 import os.path as path
+import shutil
+
+
+def clear():
+    shutil.rmtree('summaries')
 
 
 def create_folders():
@@ -19,21 +24,6 @@ def create_folders():
     os.mkdir(os.path.join('summaries', experiment_id, 'checkpoints'))
 
     return experiment_id
-
-
-def get_session():
-    checkpoint = ''
-
-    if(len(sys.argv) > 1):
-        checkpoint = sys.argv[1]
-
-    session = tf.Session()
-    if(checkpoint == ''):
-        session.run(tf.global_variables_initializer())
-    else:
-        saver = tf.train.Saver()
-        saver.restore(session, "checkpoints/{0}".format(checkpoint))
-    return session
 
 
 def tensor_to_gif_summ(summ):

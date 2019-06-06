@@ -10,11 +10,18 @@ def sample(logits):
 
 def conv(inputs, nf, ks, strides):
     return tf.layers.conv2d(
-      inputs=inputs,
-      filters=nf,
-      kernel_size=ks,
-      strides=(strides, strides),
-      activation=tf.nn.relu)
+        inputs=inputs,
+        filters=nf,
+        kernel_size=ks,
+        strides=(strides, strides),
+        activation=tf.nn.relu)
+
+
+def maxpool(inputs, pool_size, strides):
+    return tf.layers.max_pooling2d(
+        inputs,
+        pool_size,
+        strides)
 
 
 def fc(inputs, n, act=tf.nn.relu):
@@ -31,8 +38,10 @@ class Policy():
         R = tf.placeholder(tf.float32, [None])
 
         h1 = conv(X, 32, 8, 4)
-        h2 = conv(h1, 64, 4, 2)
-        h3 = conv(h2, 64, 3, 1)
+        pool1 = maxpool(h1, 2, 2)
+        h2 = conv(pool1, 64, 4, 2)
+        pool2 = maxpool(h2, 2, 2)
+        h3 = conv(pool2, 64, 3, 1)
         h3 = tf.layers.flatten(h3)
         h4 = fc(h3, 512)
         pi = fc(h4, ac_space, act=None)
