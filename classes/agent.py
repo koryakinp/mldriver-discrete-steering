@@ -50,13 +50,16 @@ class PolicyGradientAgent:
             best_score, best_run = self.memory.get_best()
             self.memory.clear()
 
-            vl, pl = self.policy.optimize(states, actions, values, advs)
+            vl, pl, entropy, total_loss = self.policy.optimize(
+                states, actions, values, advs)
 
             episode_len = len(actions)/BUFFER_SIZE
             episode_reward = sum(rewards)/BUFFER_SIZE
 
             self.log_scalar('value_loss', vl, self.global_step)
             self.log_scalar('policy_loss', pl, self.global_step)
+            self.log_scalar('entropy', entropy, self.global_step)
+            self.log_scalar('total_loss', total_loss, self.global_step)
             self.log_scalar('episode_length', episode_len, self.global_step)
             self.log_scalar('episode_reward', episode_reward, self.global_step)
 
