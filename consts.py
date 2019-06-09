@@ -1,6 +1,6 @@
 OBS_SIZE = 128
 GAMMA = 0.999
-LR = 0.001
+LR = 0.0001
 SAVE_MODEL_STEPS = 100
 ENV_NAME = "environments/mldriver-discrete-steering"
 CHECKPOINT_FILE = "mldriver.ckpt"
