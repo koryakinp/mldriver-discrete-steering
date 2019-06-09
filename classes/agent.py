@@ -2,6 +2,8 @@ from consts import *
 from classes.memory import Memory
 from classes.policy import Policy
 from utils import tensor_to_gif_summ
+from pympler import muppy
+from pympler import summary
 import numpy as np
 import tensorflow as tf
 import os
@@ -23,30 +25,32 @@ class PolicyGradientAgent:
         self.summ_writer = tf.summary.FileWriter(
             os.path.join('summaries', experiment_id), sess.graph)
         self.record_score = 0
+        self.batch_episode_counter = 0
 
-    def play_policy(self):
-        batch_episode_counter = 0
-        state = self.env.start_episode()
-
-        while batch_episode_counter < BUFFER_SIZE:
+    def play(self, state):
+        while self.batch_episode_counter < BUFFER_SIZE:
             a, v = self.policy.step(state)
             r, next_state, done = self.env.step(a)
             self.memory.save(state, a, r, done, v)
             state = next_state
             if done:
-                batch_episode_counter += 1
+                self.batch_episode_counter += 1
 
+        self.batch_episode_counter = 0
         self.memory.compute_true_value()
         advs, values, states, acts, rewards = self.memory.get_rollout()
-        return advs, values, states, acts, rewards
+        return advs, values, states, acts, rewards, state
 
     def learn(self):
+
+        state = self.env.start_episode()
+
         while True:
-            advantages, values, states, actions, rewards = self.play_policy()
+            advs, values, states, actions, rewards, state = self.play(state)
             best_score, best_run = self.memory.get_best()
             self.memory.clear()
 
-            vl, pl = self.policy.optimize(states, actions, values, advantages)
+            vl, pl = self.policy.optimize(states, actions, values, advs)
 
             episode_len = len(actions)/BUFFER_SIZE
             episode_reward = sum(rewards)/BUFFER_SIZE
@@ -64,6 +68,19 @@ class PolicyGradientAgent:
 
             if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.save_model()
+
+                all_objects = muppy.get_objects()
+                sum1 = summary.summarize(all_objects)
+                summary.print_(sum1)
+
+            del advs
+            del values
+            del states
+            del actions
+            del rewards
+
+            all_objects = None
+            sum1 = None
 
             self.global_step += 1
 
