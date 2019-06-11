@@ -42,8 +42,8 @@ class Policy():
         h2 = conv(pool1, 64, 4, 2)
         pool2 = maxpool(h2, 2, 2)
         h3 = conv(pool2, 64, 3, 1)
-        h3 = tf.layers.flatten(h3)
-        h4 = fc(h3, 512)
+        flat = tf.layers.flatten(h3)
+        h4 = fc(flat, 512)
         actor = fc(h4, ac_space, act=None)
         critic = fc(h4, 1, act=None)
 
