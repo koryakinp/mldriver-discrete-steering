@@ -4,11 +4,8 @@ from utils import *
 from consts import *
 import numpy as np
 
-experiment_id = create_folders()
+experiment_id = get_experiment_id()
 env = Environment(FRAMES_LOOKBACK, FRAMES_SKIP, experiment_id)
-session = tf.Session()
-
-agent = PolicyGradientAgent(env, session, experiment_id)
-session.run(tf.global_variables_initializer())
-
+agent = PolicyGradientAgent(env, experiment_id)
+create_folders(experiment_id)
 agent.learn()

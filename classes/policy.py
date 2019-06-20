@@ -29,15 +29,15 @@ def fc(inputs, n, act=tf.nn.relu):
 
 
 class Policy():
-    def __init__(self, sess, ob_space, ac_space):
+    def __init__(self, ob_space, ac_space):
         nh, nw, nc = ob_space
-        X = tf.placeholder(tf.float32, [None, nh, nw, nc])
+        self.X = tf.placeholder(tf.float32, [None, nh, nw, nc])
 
-        A = tf.placeholder(tf.int32, [None])
-        ADV = tf.placeholder(tf.float32, [None])
-        R = tf.placeholder(tf.float32, [None])
+        self.A = tf.placeholder(tf.int32, [None])
+        self.ADV = tf.placeholder(tf.float32, [None])
+        self.R = tf.placeholder(tf.float32, [None])
 
-        h1 = conv(X, 32, 8, 4)
+        h1 = conv(self.X, 32, 8, 4)
         pool1 = maxpool(h1, 2, 2)
         h2 = conv(pool1, 64, 4, 2)
         pool2 = maxpool(h2, 2, 2)
@@ -47,37 +47,40 @@ class Policy():
         actor = fc(h4, ac_space, act=None)
         critic = fc(h4, 1, act=None)
 
-        v0 = tf.squeeze(critic)
+        self.v0 = tf.squeeze(critic)
 
         prob = tf.nn.softmax(actor)
         dist = tf.distributions.Categorical(logits=prob)
-        a0 = tf.squeeze(dist.sample())
+        self.a0 = tf.squeeze(dist.sample())
 
-        value_loss = tf.reduce_mean(tf.square(tf.squeeze(critic) - R))
-        action_one_hot = tf.one_hot(A, NUMBER_OF_ACTIONS, dtype=tf.float32)
+        self.value_loss = tf.reduce_mean(
+            tf.square(tf.squeeze(critic) - self.R))
+        action_one_hot = tf.one_hot(
+            self.A, NUMBER_OF_ACTIONS, dtype=tf.float32)
         neg_log_prob = -tf.log(prob)
-        policy_loss = tf.reduce_mean(
-            tf.reduce_sum(neg_log_prob * action_one_hot, axis=1) * ADV)
+        self.policy_loss = tf.reduce_mean(
+            tf.reduce_sum(neg_log_prob * action_one_hot, axis=1) * self.ADV)
 
-        entropy = tf.reduce_mean(tf.reduce_sum(prob * neg_log_prob, axis=1))
+        self.entropy = tf.reduce_mean(
+            tf.reduce_sum(prob * neg_log_prob, axis=1))
 
-        loss = policy_loss + value_loss * VALUE_LOSS_K - entropy * ENTROPY_K
+        self.loss = \
+            self.policy_loss + \
+            self.value_loss * VALUE_LOSS_K - \
+            self.entropy * ENTROPY_K
 
-        adam = tf.train.AdamOptimizer(LR).minimize(loss)
+        self.adam = tf.train.AdamOptimizer(LR).minimize(self.loss)
 
-        def step(ob, *_args, **_kwargs):
-            return sess.run([a0, v0], {X: ob})
+    def step(self, ob, sess):
+        return sess.run([self.a0, self.v0], {self.X: ob})
 
-        def value(ob, *_args, **_kwargs):
-            return sess.run(v0, {X: ob})
+    def optimize(self, s, a, r, adv, sess):
+        pl, vl, ent, total, _ = sess.run([
+            self.policy_loss,
+            self.value_loss,
+            self.entropy,
+            self.loss,
+            self.adam], {
+                self.X: s, self.A: a, self.ADV: adv, self.R: r})
 
-        def optimize(s, a, r, adv):
-            pl, vl, ent, total, _ = sess.run(
-                [policy_loss, value_loss, entropy, loss, adam], {
-                    X: s, A: a, ADV: adv, R: r})
-
-            return pl, vl, ent, total
-
-        self.step = step
-        self.value = value
-        self.optimize = optimize
+        return pl, vl, ent, total

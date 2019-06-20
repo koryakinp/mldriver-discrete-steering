@@ -7,18 +7,33 @@ import numpy as np
 import uuid
 from PIL import Image
 import os.path as path
+import sys
 
 
-def create_folders():
-    if not os.path.exists('summaries'):
-        os.mkdir('summaries')
+def get_experiment_id():
+    return sys.argv[1] if len(sys.argv) == 2 else str(uuid.uuid4())
 
-    experiment_id = str(uuid.uuid4())
 
-    os.mkdir(os.path.join('summaries', experiment_id))
-    os.mkdir(os.path.join('summaries', experiment_id, 'checkpoints'))
+def get_session(experiment_id):
+    session = tf.Session()
+    if os.path.exists(os.path.join('output', experiment_id)):
+        saver = tf.train.Saver()
+        saver.restore(
+            session, tf.train.latest_checkpoint(
+                os.path.join('output', experiment_id, 'checkpoints')))
+    else:
+        session.run(tf.global_variables_initializer())
+    return session
 
-    return experiment_id
+
+def create_folders(experiment_id):
+    if not os.path.exists('output'):
+        os.mkdir(os.path.join('output'))
+
+    if not os.path.exists(os.path.join('output', experiment_id)):
+        os.mkdir(os.path.join('output', experiment_id))
+        os.mkdir(os.path.join('output', experiment_id, 'checkpoints'))
+        os.mkdir(os.path.join('output', experiment_id, 'summaries'))
 
 
 def tensor_to_gif_summ(summ):
@@ -55,18 +70,3 @@ def tensor_to_gif_summ(summ):
         image.encoded_image_string = encoded_image_string
         summary.value.add(tag=tag, image=image)
     return summary
-
-
-def save_frame(frame, frame_counter, folder):
-    frame = np.squeeze(frame)
-    frame = (frame * 255).astype(np.uint8)
-    im = Image.fromarray(frame, 'L')
-    filename = 'frame_{0}.jpeg'.format(frame_counter)
-
-    folder_path = os.path.join('summaries', 'sample-episodes', folder)
-
-    if not os.path.exists(folder_path):
-        os.mkdir(folder_path)
-
-    fullpath = os.path.join(folder_path, filename)
-    im.save(fullpath)

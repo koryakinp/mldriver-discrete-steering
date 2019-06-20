@@ -1,7 +1,7 @@
 from consts import *
 from classes.memory import Memory
 from classes.policy import Policy
-from utils import tensor_to_gif_summ
+from utils import *
 from pympler import muppy
 from pympler import summary
 import numpy as np
@@ -13,23 +13,25 @@ import os.path as path
 class PolicyGradientAgent:
 
     def __init__(
-            self, env, sess, experiment_id):
+            self, env, experiment_id):
         self.env = env
         self.memory = Memory()
-        self.sess = sess
-        self.policy = Policy(
-            sess, [OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK], NUMBER_OF_ACTIONS)
-        self.global_step = 1
+        self.GS = tf.Variable(0, name='global_step', trainable=False)
+        self.policy = Policy([
+            OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK], NUMBER_OF_ACTIONS)
+        self.sess = get_session(experiment_id)
+        self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
         self.saver = tf.train.Saver()
         self.experiment_id = experiment_id
         self.summ_writer = tf.summary.FileWriter(
-            os.path.join('summaries', experiment_id), sess.graph)
+            os.path.join('output', experiment_id, 'summaries'),
+            self.sess.graph)
         self.record_score = 0
         self.batch_episode_counter = 0
 
     def play(self, state):
         while self.batch_episode_counter < BUFFER_SIZE:
-            a, v = self.policy.step(state)
+            a, v = self.policy.step(state, self.sess)
             r, next_state, done = self.env.step(a)
             self.memory.save(state, a, r, done, v)
             state = next_state
@@ -51,7 +53,7 @@ class PolicyGradientAgent:
             self.memory.clear()
 
             vl, pl, entropy, total_loss = self.policy.optimize(
-                states, actions, values, advs)
+                states, actions, values, advs, self.sess)
 
             episode_len = len(actions)/BUFFER_SIZE
             episode_reward = sum(rewards)/BUFFER_SIZE
@@ -88,8 +90,10 @@ class PolicyGradientAgent:
             self.global_step += 1
 
     def save_model(self):
+        assign = tf.assign(self.GS, self.global_step)
+        self.sess.run(assign)
         path = os.path.join(
-            'summaries', self.experiment_id, 'checkpoints', CHECKPOINT_FILE)
+            'output', self.experiment_id, 'checkpoints', CHECKPOINT_FILE)
         self.saver.save(
             self.sess, path, self.global_step, write_meta_graph=False)
 
@@ -97,7 +101,7 @@ class PolicyGradientAgent:
         summary = tf.Summary(
             value=[tf.Summary.Value(tag=tag, simple_value=value)])
         self.summ_writer.add_summary(summary, step)
-        print('episode: {0} | {1}: {2}'.format(step, tag, value))
+        print('step: {0} | {1}: {2}'.format(step, tag, value))
 
     def log_gif(self, tag, images, step):
         tensor_summ = tf.summary.tensor_summary(tag, images)
