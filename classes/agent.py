@@ -8,6 +8,7 @@ import numpy as np
 import tensorflow as tf
 import os
 import os.path as path
+import logging
 
 
 class PolicyGradientAgent:
@@ -126,7 +127,8 @@ class PolicyGradientAgent:
         summary = tf.Summary(
             value=[tf.Summary.Value(tag=tag, simple_value=value)])
         self.summ_writer.add_summary(summary, step)
-        print('step: {0} | {1}: {2}'.format(step, tag, value))
+        msg = 'step: {0} | {1}: {2}'.format(step, tag, value)
+        logging.info(msg)
 
     def log_gif(self, tag, images, step):
         tensor_summ = tf.summary.tensor_summary(tag, images)
