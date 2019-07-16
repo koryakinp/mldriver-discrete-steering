@@ -6,26 +6,35 @@ import tensorflow as tf
 
 
 class Memory:
-    def __init__(self):
+    def __init__(self, best_score):
         self.transitions = np.array([], dtype=object)
-        self.best_score = 0
+        self.best_score = best_score
         self.cur_score = 0
         self.best_run = np.empty((0, OBS_SIZE, OBS_SIZE))
         self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
+        self.record_beaten = False
 
-    def save(self, s, a, r, done, v):
+    def save(self, save_result):
+
+        s = save_result["state"]
+        a = save_result["action"]
+        r = save_result["reward"]
+        done = save_result["done"]
+        v = save_result["value"]
+        frame = save_result["frame"]
+        frame = np.transpose(frame, [2, 0, 1])
+
         transition = Transition(s, a, r, v, done)
         self.transitions = np.append(self.transitions, transition)
 
         self.cur_score += r
-
-        frame = s[:, :, :, FRAMES_LOOKBACK - 1]
         self.cur_run = np.append(self.cur_run, frame, axis=0)
 
         if done:
             if self.cur_score > self.best_score:
                 self.best_score = self.cur_score
                 self.best_run = self.cur_run
+                self.record_beaten = True
 
             self.cur_score = 0
             self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
@@ -44,9 +53,18 @@ class Memory:
         actions = [transition.action for transition in self.transitions]
         rewards = [transition.reward for transition in self.transitions]
 
-        states = np.array(states).squeeze()
+        states = np.squeeze(states)
 
-        return advantages, values, states, actions, rewards
+        rollout_res = {
+            "values": values,
+            "states": states,
+            "actions": actions,
+            "rewards": rewards,
+            "advantages": advantages,
+            "record_beaten": self.record_beaten
+        }
+
+        return rollout_res
 
     def get_best(self):
         bs = self.best_score
@@ -60,7 +78,7 @@ class Memory:
 
     def clear(self):
         self.transitions = np.array([], dtype=object)
-        self.best_score = 0
         self.cur_score = 0
         self.best_run = np.empty((0, OBS_SIZE, OBS_SIZE))
         self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
+        self.record_beaten = False

@@ -3,11 +3,6 @@ import tensorflow as tf
 from consts import *
 
 
-def sample(logits):
-    dist = tf.distributions.Categorical(logits=tf.nn.softmax(logits))
-    return dist.sample()
-
-
 def conv(inputs, nf, ks, strides):
     return tf.layers.conv2d(
         inputs=inputs,
@@ -71,8 +66,15 @@ class Policy():
 
         self.adam = tf.train.AdamOptimizer(LR).minimize(self.loss)
 
-    def step(self, ob, sess):
-        return sess.run([self.a0, self.v0], {self.X: ob})
+    def play(self, ob, sess):
+        a, v = sess.run([self.a0, self.v0], {self.X: ob})
+
+        res = {
+            "action": a,
+            "value": v
+        }
+
+        return res
 
     def optimize(self, s, a, r, adv, sess):
         pl, vl, ent, total, _ = sess.run([
@@ -81,6 +83,16 @@ class Policy():
             self.entropy,
             self.loss,
             self.adam], {
-                self.X: s, self.A: a, self.ADV: adv, self.R: r})
+                self.X: s,
+                self.A: a,
+                self.ADV: adv,
+                self.R: r})
 
-        return pl, vl, ent, total
+        res = {
+            "policy_loss": pl,
+            "value_loss": vl,
+            "entropy": ent,
+            "total_loss": total
+        }
+
+        return res

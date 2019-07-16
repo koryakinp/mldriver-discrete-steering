@@ -12,15 +12,18 @@ import os.path as path
 
 class PolicyGradientAgent:
 
-    def __init__(
-            self, env, experiment_id):
+    def __init__(self, env, experiment_id):
         self.env = env
-        self.memory = Memory()
-        self.GS = tf.Variable(0, name='global_step', trainable=False)
+        self.GS = tf.Variable(
+            0, name='global_step', trainable=False, dtype=tf.int32)
+        self.RECORD = tf.Variable(
+            0, name='record', trainable=False, dtype=tf.float32)
         self.policy = Policy([
             OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK], NUMBER_OF_ACTIONS)
         self.sess = get_session(experiment_id)
         self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
+        self.record_run = self.sess.run(self.RECORD)
+        self.memory = Memory(self.record_run)
         self.saver = tf.train.Saver()
         self.experiment_id = experiment_id
         self.summ_writer = tf.summary.FileWriter(
@@ -29,45 +32,70 @@ class PolicyGradientAgent:
         self.record_score = 0
         self.batch_episode_counter = 0
 
-    def play(self, state):
-        while self.batch_episode_counter < BUFFER_SIZE:
-            a, v = self.policy.step(state, self.sess)
-            r, next_state, done = self.env.step(a)
-            self.memory.save(state, a, r, done, v)
-            state = next_state
-            if done:
-                self.batch_episode_counter += 1
-
-        self.batch_episode_counter = 0
-        self.memory.compute_true_value()
-        advs, values, states, acts, rewards = self.memory.get_rollout()
-        return advs, values, states, acts, rewards, state
-
     def learn(self):
 
-        state = self.env.start_episode()
+        env_step_result = self.env.start_episode()
+        save_result = {
+            "state": None,
+            "action": None,
+            "reward": None,
+            "value": None,
+            "frame": None
+        }
 
         while True:
-            advs, values, states, actions, rewards, state = self.play(state)
-            best_score, best_run = self.memory.get_best()
-            self.memory.clear()
+            while self.batch_episode_counter < BUFFER_SIZE:
 
-            vl, pl, entropy, total_loss = self.policy.optimize(
-                states, actions, values, advs, self.sess)
+                pol_step_result = self.policy.play(
+                    env_step_result['stacked_observation'], self.sess)
 
-            episode_len = len(actions)/BUFFER_SIZE
-            episode_reward = sum(rewards)/BUFFER_SIZE
+                save_result.update(pol_step_result)
+                save_result["state"] = env_step_result['stacked_observation']
+                save_result["frame"] = env_step_result['visual_observation']
+                save_result["done"] = env_step_result['done']
 
-            self.log_scalar('value_loss', vl, self.global_step)
-            self.log_scalar('policy_loss', pl, self.global_step)
-            self.log_scalar('entropy', entropy, self.global_step)
-            self.log_scalar('total_loss', total_loss, self.global_step)
-            self.log_scalar('episode_length', episode_len, self.global_step)
-            self.log_scalar('episode_reward', episode_reward, self.global_step)
+                env_step_result = self.env.step(pol_step_result['action'])
+                save_result["reward"] = env_step_result['reward']
 
-            if best_score > self.record_score:
+                self.memory.save(save_result)
+
+                if env_step_result["done"]:
+                    self.batch_episode_counter += 1
+
+            self.batch_episode_counter = 0
+            self.memory.compute_true_value()
+
+            rollout_res = self.memory.get_rollout()
+
+            opt_result = self.policy.optimize(
+                rollout_res["states"],
+                rollout_res["actions"],
+                rollout_res["values"],
+                rollout_res["advantages"], self.sess)
+
+            episode_len = len(rollout_res["actions"])/BUFFER_SIZE
+            episode_reward = sum(rollout_res["rewards"])/BUFFER_SIZE
+
+            self.log_scalar(
+                'value_loss', opt_result["value_loss"], self.global_step)
+            self.log_scalar(
+                'policy_loss', opt_result["policy_loss"], self.global_step)
+            self.log_scalar(
+                'entropy', opt_result["entropy"], self.global_step)
+            self.log_scalar(
+                'total_loss', opt_result["total_loss"], self.global_step)
+            self.log_scalar(
+                'episode_length', episode_len, self.global_step)
+            self.log_scalar(
+                'episode_reward', episode_reward, self.global_step)
+
+            if rollout_res["record_beaten"]:
+                best_score, best_run = self.memory.get_best()
                 self.log_gif('best_run', best_run, self.global_step)
                 self.record_score = best_score
+                self.sess.run(tf.assign(self.RECORD, self.record_score))
+
+            self.memory.clear()
 
             print('=======')
 
@@ -78,20 +106,17 @@ class PolicyGradientAgent:
                 sum1 = summary.summarize(all_objects)
                 summary.print_(sum1)
 
-            del advs
-            del values
-            del states
-            del actions
-            del rewards
+            del rollout_res
+            del opt_result
 
             all_objects = None
             sum1 = None
 
-            self.global_step += 1
+            self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
 
     def save_model(self):
-        assign = tf.assign(self.GS, self.global_step)
-        self.sess.run(assign)
+        assign_gs = tf.assign(self.GS, self.global_step)
+        self.sess.run(assign_gs)
         path = os.path.join(
             'output', self.experiment_id, 'checkpoints', CHECKPOINT_FILE)
         self.saver.save(

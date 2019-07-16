@@ -11,7 +11,17 @@ import sys
 
 
 def get_experiment_id():
-    return sys.argv[1] if len(sys.argv) == 2 else str(uuid.uuid4())
+
+    if len(sys.argv) != 2:
+        raise Exception('Must provide experiment id or "new" keyword')
+
+    if sys.argv[1] == 'new':
+        return str(uuid.uuid4())
+
+    if os.path.exists(os.path.join('output', sys.argv[1])):
+        return sys.argv[1]
+
+    raise Exception('Can not find experiment {0}'.format(sys.argv[1]))
 
 
 def get_session(experiment_id):
