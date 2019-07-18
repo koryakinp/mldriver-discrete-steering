@@ -101,6 +101,7 @@ class PolicyGradientAgent:
             print('=======')
 
             if self.global_step % SAVE_MODEL_STEPS == 0:
+                self.check_model()
                 self.save_model()
 
                 all_objects = muppy.get_objects()
@@ -114,6 +115,11 @@ class PolicyGradientAgent:
             sum1 = None
 
             self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
+
+    def check_model(self):
+        for trainable_variable in tf.trainable_variables():
+            self.sess.run(
+                tf.check_numerics(trainable_variable, 'invalid tensor'))
 
     def save_model(self):
         assign_gs = tf.assign(self.GS, self.global_step)

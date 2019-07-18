@@ -52,7 +52,7 @@ class Policy():
             tf.square(tf.squeeze(critic) - self.R))
         action_one_hot = tf.one_hot(
             self.A, NUMBER_OF_ACTIONS, dtype=tf.float32)
-        neg_log_prob = -tf.log(prob)
+        neg_log_prob = -tf.log(tf.clip_by_value(prob, 1e-10, 1.0))
         self.policy_loss = tf.reduce_mean(
             tf.reduce_sum(neg_log_prob * action_one_hot, axis=1) * self.ADV)
 

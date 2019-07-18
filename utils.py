@@ -28,9 +28,9 @@ def get_session(experiment_id):
     session = tf.Session()
     if os.path.exists(os.path.join('output', experiment_id)):
         saver = tf.train.Saver()
-        saver.restore(
-            session, tf.train.latest_checkpoint(
-                os.path.join('output', experiment_id, 'checkpoints')))
+        path = os.path.join('output', experiment_id, 'checkpoints')
+        latest_checkpoint = tf.train.latest_checkpoint(path)
+        saver.restore(session, latest_checkpoint)
     else:
         session.run(tf.global_variables_initializer())
     return session
