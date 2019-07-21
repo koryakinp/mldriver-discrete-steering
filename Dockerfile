@@ -13,6 +13,9 @@ RUN pip install Pympler
 
 RUN git clone https://github.com/koryakinp/mldriver-discrete-steering.git
 WORKDIR /mldriver-discrete-steering
+COPY config/* .
+
+
 COPY environments environments
 RUN pip install -e .
 RUN mkdir summaries
