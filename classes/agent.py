@@ -25,7 +25,7 @@ class PolicyGradientAgent:
         self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
         self.record_run = self.sess.run(self.RECORD)
         self.memory = Memory(self.record_run)
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(max_to_keep=0)
         self.experiment_id = experiment_id
         self.summ_writer = tf.summary.FileWriter(
             os.path.join('output', experiment_id, 'summaries'),
