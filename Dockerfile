@@ -20,5 +20,4 @@ COPY environments environments
 RUN pip install -e .
 RUN mkdir summaries
 RUN chmod 755 runner.sh
-ENTRYPOINT ["./runner.sh"]
-CMD ["-e new"]
+CMD ["./runner.sh -e new"]
