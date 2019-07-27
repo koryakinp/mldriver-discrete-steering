@@ -5,7 +5,7 @@ while getopts "ce" opt; do
       xvfb-run -a -s "-screen 0 128x128x24" -- python main.py $OPTARG
       ;;
     c)
-      mv output/config/$OPTARG consts.py
+      cp output/config/$OPTARG consts.py
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
