@@ -2,7 +2,7 @@
 while getopts ":c:" opt; do
   case $opt in
     c)
-      mv output/$OPTARG consts.py
+      mv output/config/$OPTARG consts.py
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
