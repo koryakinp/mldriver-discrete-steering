@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.13.1-gpu-py3
+FROM tensorflow/tensorflow:1.13.1-py3
 RUN apt-get update && apt-get install -y apt-transport-https
 RUN apt-get install -y xvfb
 
@@ -20,4 +20,5 @@ COPY environments environments
 RUN pip install -e .
 RUN mkdir summaries
 RUN chmod 755 runner.sh
-CMD ["./runner.sh -e new"]
+ENTRYPOINT [ "./runner.sh" ]
+CMD ["-e new"]
