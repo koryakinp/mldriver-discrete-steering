@@ -39,9 +39,8 @@ class Policy():
         h3 = conv(pool2, 64, 3, 1)
         flat = tf.layers.flatten(h3)
         h4 = fc(flat, 1024)
-        h5 = fc(h4, 512)
-        actor = fc(h5, ac_space, act=None)
-        critic = fc(h5, 1, act=None)
+        actor = fc(h4, ac_space, act=None)
+        critic = fc(h4, 1, act=None)
 
         self.v0 = tf.squeeze(critic)
 
