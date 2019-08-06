@@ -64,7 +64,7 @@ class Policy():
             self.value_loss * VALUE_LOSS_K - \
             self.entropy * ENTROPY_K
 
-        self.adam = tf.train.RMSprop(LR).minimize(self.loss)
+        self.adam = tf.train.RMSPropOptimizer(LR).minimize(self.loss)
 
     def play(self, ob, sess):
         a, v = sess.run([self.a0, self.v0], {self.X: ob})
