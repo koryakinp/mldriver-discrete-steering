@@ -32,13 +32,13 @@ class Policy():
         self.ADV = tf.placeholder(tf.float32, [None])
         self.R = tf.placeholder(tf.float32, [None])
 
-        h1 = conv(self.X, 32, 4, 1)
+        h1 = conv(self.X, 32, 4, 2)
         pool1 = maxpool(h1, 2, 2)
-        h2 = conv(pool1, 48, 4, 1)
+        h2 = conv(pool1, 32, 4, 2)
         pool2 = maxpool(h2, 2, 2)
-        h3 = conv(pool2, 64, 4, 1)
+        h3 = conv(pool2, 32, 4, 1)
         flat = tf.layers.flatten(h3)
-        h4 = fc(flat, 1024)
+        h4 = fc(flat, 256)
         actor = fc(h4, ac_space, act=None)
         critic = fc(h4, 1, act=None)
 
@@ -64,7 +64,7 @@ class Policy():
             self.value_loss * VALUE_LOSS_K - \
             self.entropy * ENTROPY_K
 
-        self.adam = tf.train.AdamOptimizer(LR).minimize(self.loss)
+        self.adam = tf.train.RMSprop(LR).minimize(self.loss)
 
     def play(self, ob, sess):
         a, v = sess.run([self.a0, self.v0], {self.X: ob})
