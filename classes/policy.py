@@ -34,13 +34,14 @@ class Policy():
 
         h1 = conv(self.X, 32, 4, 2)
         pool1 = maxpool(h1, 2, 2)
-        h2 = conv(pool1, 32, 4, 2)
+        h2 = conv(pool1, 48, 4, 2)
         pool2 = maxpool(h2, 2, 2)
-        h3 = conv(pool2, 32, 4, 1)
+        h3 = conv(pool2, 64, 4, 1)
         flat = tf.layers.flatten(h3)
-        h4 = fc(flat, 256)
-        actor = fc(h4, ac_space, act=None)
-        critic = fc(h4, 1, act=None)
+        h4 = fc(flat, 1024, act=tf.nn.sigmoid)
+        h5 = fc(h4, 1024, act=tf.nn.sigmoid)
+        actor = fc(h5, ac_space, act=None)
+        critic = fc(h5, 1, act=None)
 
         self.v0 = tf.squeeze(critic)
 
