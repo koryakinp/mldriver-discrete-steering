@@ -3,12 +3,13 @@ from consts import *
 
 
 class Transition:
-    def __init__(self, state, action, reward, estimated_value, done):
+    def __init__(self, state, action, reward, estimated_value, done, frame):
         self.state = state
         self.action = action
         self.reward = reward
         self.estimated_value = estimated_value
         self.done = done
+        self.frame = frame
         self.true_value = None
 
     def Q(self):

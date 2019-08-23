@@ -9,6 +9,9 @@ import tensorflow as tf
 import os
 import os.path as path
 import logging
+import moviepy.editor as mpy
+import tempfile
+from PIL import Image, ImageDraw, ImageFont
 
 
 class PolicyGradientAgent:
@@ -103,6 +106,10 @@ class PolicyGradientAgent:
             if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
+                self.save_gif(
+                    rollout_res["frames"],
+                    rollout_res["values"],
+                    rollout_res["rewards"])
 
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
@@ -140,3 +147,32 @@ class PolicyGradientAgent:
         tensor_summ = tf.summary.tensor_summary(tag, images)
         tensor_value = self.sess.run(tensor_summ)
         self.summ_writer.add_summary(tensor_to_gif_summ(tensor_value), step)
+
+    def save_gif(self, frames, values, rewards):
+
+        frames = np.array(frames)
+        frames = np.transpose(frames, (0, 2, 3, 1))
+        frames = frames * 255
+        frames = frames.astype('uint8')
+        frames = list(frames)
+
+        for index, frame in enumerate(frames):
+            value = 'Value: ' + str(round(values[index], 2))
+            reward = 'Reward: ' + str(round(rewards[index], 2))
+            frames[index] = apply_text(frame, [value, reward])
+
+        clip = mpy.ImageSequenceClip(frames, fps=1)
+        folder_path = os.path.join('output', self.experiment_id, 'summaries')
+        filename = str(self.global_step) + '_sample_batch.gif'
+        full_path = os.path.join(folder_path, filename)
+        clip.write_gif(full_path, verbose=False)
+
+
+def apply_text(frame, data):
+    frame = np.squeeze(frame)
+    img = Image.fromarray(frame)
+    draw = ImageDraw.Draw(img)
+    for i in range(0, len(data)):
+        draw.text((2, i * 12 + 2), data[i], fill='white')
+    frame = np.array(img)
+    return np.expand_dims(frame, 2)
