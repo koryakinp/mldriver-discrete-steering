@@ -19,4 +19,3 @@ class UnityEnvironmentProvider:
                 pass
 
         return env
-
