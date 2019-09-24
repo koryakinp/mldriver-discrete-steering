@@ -1,6 +1,8 @@
 FROM tensorflow/tensorflow:1.13.1-py3
 RUN apt-get update && apt-get install -y apt-transport-https
 RUN apt-get install -y xvfb
+RUN apt-get install curl
+RUN apt-get install zip
 
 EXPOSE 5005
 
@@ -12,12 +14,10 @@ RUN pip install moviepy
 RUN pip install Pympler
 
 RUN git clone https://github.com/koryakinp/mldriver-discrete-steering.git
+RUN curl https://github.com/koryakinp/MLDriver/releases/download/1.0/MLDriver_Linux_x86_64.zip
+RUN curl https://github.com/Unity-Technologies/ml-agents/archive/0.9.2.zip
+
 WORKDIR /mldriver-discrete-steering
-
-
-COPY environments environments
-RUN pip install -e .
-RUN mkdir summaries
 RUN chmod 755 runner.sh
 ENTRYPOINT [ "./runner.sh" ]
 CMD ["-c config1.py -e new"]
