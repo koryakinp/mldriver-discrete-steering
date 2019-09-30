@@ -25,6 +25,9 @@ class Environment:
         self.use_diff = use_diff
 
     def start_episode(self):
+
+        print('Starting environment..')
+
         info = self.env.reset(train_mode=True)[self.default_brain]
         visual_observation = info.visual_observations[0][0]
         self.__fill_state(visual_observation)
@@ -44,6 +47,9 @@ class Environment:
         return res
 
     def step(self, action):
+
+        print('Acting in the environment.. {0}'.format(action))
+
         step_info = self.env.step([[action]])
         info = step_info[self.default_brain]
         reward = info.rewards[0]

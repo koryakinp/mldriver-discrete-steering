@@ -4,7 +4,7 @@ RUN pipenv install Pillow
 RUN pipenv install Keras
 RUN pipenv install moviepy
 RUN pipenv install Pympler
-RUN pipenv install tensorflow
+RUN pipenv install tensorflow==1.12.0
 
 RUN git clone https://github.com/koryakinp/mldriver-discrete-steering.git
 

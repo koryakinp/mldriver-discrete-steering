@@ -48,6 +48,9 @@ class PolicyGradientAgent:
         }
 
         while True:
+
+            print('Starting trainig loop..')
+
             while self.batch_episode_counter < BUFFER_SIZE:
 
                 pol_step_result = self.policy.play(
