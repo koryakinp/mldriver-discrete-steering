@@ -1,4 +1,6 @@
 #!/bin/bash
+cd /python-env/mldriver-discrete-steering
+
 while getopts ":c:e:" opt; do
   case $opt in
     e)
