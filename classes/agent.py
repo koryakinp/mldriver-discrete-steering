@@ -68,24 +68,20 @@ class PolicyGradientAgent:
 
                 if env_step_result["done"]:
                     self.batch_episode_counter += 1
-                    print('Episode {0} is over..'.format(
-                        self.batch_episode_counter))
+                    print('Episode: {0} | Batch: {1}'.format(
+                        self.batch_episode_counter, self.global_step))
 
             self.batch_episode_counter = 0
 
-            print('Computing true value')
             self.memory.compute_true_value()
 
-            print('Getting rollout')
             rollout_res = self.memory.get_rollout()
 
-            print('Optimization start')
             opt_result = self.policy.optimize(
                 rollout_res["states"],
                 rollout_res["actions"],
                 rollout_res["values"],
                 rollout_res["advantages"], self.sess)
-            print('Optimization finish')
 
             episode_len = len(rollout_res["actions"])/BUFFER_SIZE
             episode_reward = sum(rollout_res["rewards"])/BUFFER_SIZE
