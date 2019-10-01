@@ -65,6 +65,8 @@ def tensor_to_gif_summ(summ):
         if images_arr.shape[-1] != 1:
             raise ValueError('Tensors must have 3 channels.')
 
+        print(images_arr.shape)
+
         # encode sequence of images into gif string
         clip = mpy.ImageSequenceClip(list(images_arr), fps=30)
         with tempfile.NamedTemporaryFile() as f:

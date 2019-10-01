@@ -102,7 +102,7 @@ class PolicyGradientAgent:
                 self.log_gif('best_run', best_run, self.global_step)
                 self.record_score = best_score
                 self.sess.run(tf.assign(self.RECORD, self.record_score))
-                logging.info('Record beaten: {0}'.foramt(best_score))
+                logging.info('Record beaten: {0}'.format(best_score))
 
             self.memory.clear()
 
