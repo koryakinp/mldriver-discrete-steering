@@ -21,8 +21,6 @@ class Memory:
         r = save_result["reward"]
         done = save_result["done"]
         v = save_result["value"]
-        frame = save_result["frame"]
-        frame = np.transpose(frame, [2, 0, 1])
 
         transition = Transition(s, a, r, v, done, frame)
         self.transitions = np.append(self.transitions, transition)
@@ -52,7 +50,6 @@ class Memory:
         states = [transition.state for transition in self.transitions]
         actions = [transition.action for transition in self.transitions]
         rewards = [transition.reward for transition in self.transitions]
-        frames = [transition.frame for transition in self.transitions]
 
         states = np.squeeze(states)
 
@@ -62,8 +59,7 @@ class Memory:
             "actions": actions,
             "rewards": rewards,
             "advantages": advantages,
-            "record_beaten": self.record_beaten,
-            "frames": frames
+            "record_beaten": self.record_beaten
         }
 
         return rollout_res

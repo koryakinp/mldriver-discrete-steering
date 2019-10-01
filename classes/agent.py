@@ -58,7 +58,6 @@ class PolicyGradientAgent:
 
                 save_result.update(pol_step_result)
                 save_result["state"] = env_step_result['stacked_observation']
-                save_result["frame"] = env_step_result['visual_observation']
                 save_result["done"] = env_step_result['done']
 
                 env_step_result = self.env.step(pol_step_result['action'])
@@ -114,10 +113,6 @@ class PolicyGradientAgent:
             if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
-                # self.save_gif(
-                #    rollout_res["frames"],
-                #    rollout_res["values"],
-                #    rollout_res["rewards"])
 
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
