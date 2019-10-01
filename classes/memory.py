@@ -22,7 +22,7 @@ class Memory:
         done = save_result["done"]
         v = save_result["value"]
 
-        transition = Transition(s, a, r, v, done, frame)
+        transition = Transition(s, a, r, v, done)
         self.transitions = np.append(self.transitions, transition)
 
         self.cur_score += r
