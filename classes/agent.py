@@ -47,9 +47,9 @@ class PolicyGradientAgent:
             "frame": None
         }
 
-        while True:
+        print('Starting trainig loop..')
 
-            print('Starting trainig loop..')
+        while True:
 
             while self.batch_episode_counter < BUFFER_SIZE:
 
@@ -114,10 +114,10 @@ class PolicyGradientAgent:
             if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
-                self.save_gif(
-                    rollout_res["frames"],
-                    rollout_res["values"],
-                    rollout_res["rewards"])
+                # self.save_gif(
+                #    rollout_res["frames"],
+                #    rollout_res["values"],
+                #    rollout_res["rewards"])
 
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
@@ -173,7 +173,7 @@ class PolicyGradientAgent:
         folder_path = os.path.join('output', self.experiment_id, 'summaries')
         filename = str(self.global_step) + '_sample_batch.gif'
         full_path = os.path.join(folder_path, filename)
-        clip.write_gif(full_path, verbose=False)
+        clip.write_gif(full_path, verbose=True)
 
 
 def apply_text(frame, data):
