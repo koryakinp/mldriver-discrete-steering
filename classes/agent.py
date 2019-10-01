@@ -43,11 +43,10 @@ class PolicyGradientAgent:
             "state": None,
             "action": None,
             "reward": None,
-            "value": None,
-            "frame": None
+            "value": None
         }
 
-        print('Starting trainig loop..')
+        logging.info('Starting trainig loop..')
 
         while True:
 
@@ -72,7 +71,6 @@ class PolicyGradientAgent:
                     logging.info(msg)
 
             self.batch_episode_counter = 0
-
             self.memory.compute_true_value()
 
             rollout_res = self.memory.get_rollout()

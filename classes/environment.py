@@ -1,6 +1,7 @@
 from collections import deque
 from consts import *
 import numpy as np
+import logging
 
 
 class Environment:
@@ -26,7 +27,7 @@ class Environment:
 
     def start_episode(self):
 
-        print('Starting environment..')
+        logging.info('Starting environment..')
 
         info = self.env.reset(train_mode=True)[self.default_brain]
         visual_observation = info.visual_observations[0][0]
