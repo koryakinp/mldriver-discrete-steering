@@ -26,7 +26,6 @@ class Memory:
         self.transitions = np.append(self.transitions, transition)
 
         self.cur_score += r
-        self.cur_run = np.append(self.cur_run, frame, axis=0)
 
         if done:
             if self.cur_score > self.best_score:
