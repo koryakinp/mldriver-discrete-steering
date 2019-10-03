@@ -113,3 +113,4 @@ output/
 .vscode/launch.json
 .vscode/settings.json
 UnitySDK.log
+.vscode/settings.json

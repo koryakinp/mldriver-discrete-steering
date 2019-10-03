@@ -43,7 +43,8 @@ class PolicyGradientAgent:
             "state": None,
             "action": None,
             "reward": None,
-            "value": None
+            "value": None,
+            "frame": None
         }
 
         logging.info('Starting trainig loop..')
@@ -57,6 +58,7 @@ class PolicyGradientAgent:
 
                 save_result.update(pol_step_result)
                 save_result["state"] = env_step_result['stacked_observation']
+                save_result["frame"] = env_step_result['visual_observation']
                 save_result["done"] = env_step_result['done']
 
                 env_step_result = self.env.step(pol_step_result['action'])
