@@ -114,6 +114,7 @@ class PolicyGradientAgent:
 
             del rollout_res
             del opt_result
+            del pol_step_result
 
             self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
 
