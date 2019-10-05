@@ -10,8 +10,6 @@ class Memory:
         self.transitions = np.array([], dtype=object)
         self.best_score = best_score
         self.cur_score = 0
-        self.best_run = np.empty((0, OBS_SIZE, OBS_SIZE))
-        self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
         self.record_beaten = False
 
     def save(self, save_result):
@@ -28,16 +26,13 @@ class Memory:
         self.transitions = np.append(self.transitions, transition)
 
         self.cur_score += r
-        self.cur_run = np.append(self.cur_run, frame, axis=0)
 
         if done:
             if self.cur_score > self.best_score:
                 self.best_score = self.cur_score
-                self.best_run = self.cur_run
                 self.record_beaten = True
 
             self.cur_score = 0
-            self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
 
     def compute_true_value(self):
         temp = 0
@@ -67,18 +62,9 @@ class Memory:
         return rollout_res
 
     def get_best(self):
-        bs = self.best_score
-        br = self.best_run
-        br = np.expand_dims(br, axis=3)
-        br = br * 255
-        br = br.astype(np.uint8)
-        br = tf.convert_to_tensor(br)
-
-        return bs, br
+        return self.best_score
 
     def clear(self):
         self.transitions = np.array([], dtype=object)
         self.cur_score = 0
-        self.best_run = np.empty((0, OBS_SIZE, OBS_SIZE))
-        self.cur_run = np.empty((0, OBS_SIZE, OBS_SIZE))
         self.record_beaten = False

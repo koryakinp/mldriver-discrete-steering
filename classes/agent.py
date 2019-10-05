@@ -101,8 +101,7 @@ class PolicyGradientAgent:
                 'episode_reward', episode_reward, self.global_step)
 
             if rollout_res["record_beaten"]:
-                best_score, best_run = self.memory.get_best()
-                self.log_gif('best_run', best_run, self.global_step)
+                best_score = self.memory.get_best()
                 self.record_score = best_score
                 self.sess.run(tf.assign(self.RECORD, self.record_score))
                 logging.info('Record beaten: {0}'.format(best_score))
