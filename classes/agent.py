@@ -180,5 +180,8 @@ def log_memmory_usage():
     total = sum(total)
     logging.info("Total Memory Usage: {0:.2f} MB".format(total/(1024*1024)))
 
+    del sum1
+    del all_objects
+
 
     
