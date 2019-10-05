@@ -80,7 +80,6 @@ class PolicyGradientAgent:
                 rollout_res["values"],
                 rollout_res["advantages"], self.sess)
 
-            episode_len = len(rollout_res["actions"])/BUFFER_SIZE
             episode_reward = sum(rollout_res["rewards"])/BUFFER_SIZE
 
             self.log_scalar(
@@ -91,8 +90,6 @@ class PolicyGradientAgent:
                'entropy', opt_result["entropy"], self.global_step)
             self.log_scalar(
                'total_loss', opt_result["total_loss"], self.global_step)
-            self.log_scalar(
-               'episode_length', episode_len, self.global_step)
             self.log_scalar(
                'episode_reward', episode_reward, self.global_step)
 
