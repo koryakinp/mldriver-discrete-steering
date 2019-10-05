@@ -109,18 +109,13 @@ class PolicyGradientAgent:
 
             self.memory.clear()
 
-            print('=======')
-
             if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
-                self.prev_summary = log_memmory_usage(self.prev_summary)
+                log_memmory_usage()
 
             del rollout_res
             del opt_result
-
-            all_objects = None
-            sum1 = None
 
             self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
 
@@ -178,7 +173,7 @@ def apply_text(frame, data):
     frame = np.array(img)
     return np.expand_dims(frame, 2)
 
-def log_memmory_usage(prev_summary):
+def log_memmory_usage():
     all_objects = muppy.get_objects()
     sum1 = summary.summarize(all_objects)
     sum1.sort(key=lambda x: x[2], reverse=True)
@@ -186,32 +181,5 @@ def log_memmory_usage(prev_summary):
     total = sum(total)
     logging.info("Total Memory Usage: {0:.2f} MB".format(total/(1024*1024)))
 
-    cur_summary = []
-
-    for item in sum1[:15]:
-        summary_item = {
-            "key": item[0],
-            "count": item[1],
-            "memory": item[2]
-        }
-        cur_summary.append(summary_item)
-        msg = 'Name: {0} | Count: {1} | Memory {2:.2f} MB'.format(
-            summary_item["key"], summary_item["count"], summary_item["memory"]/(1024*1024))
-        logging.info(msg)
-
-    logging.info("Changes since last iteration:")
-
-    for cur_item in cur_summary:
-        for prev_item in prev_summary:
-            if(cur_item["key"] == prev_item["key"] and cur_item["count"] != prev_item["count"]):
-                diff_count = cur_item["count"] - prev_item["count"]
-                diff_memory = cur_item["memory"] - prev_item["memory"]
-
-                msg = "Name: {0} | Count: {1} | Memory: {2}".format(
-                    cur_item["key"], diff_count, diff_memory)
-                logging.info(msg)
-                
-
-    return cur_summary
 
     
