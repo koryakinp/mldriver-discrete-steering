@@ -51,34 +51,36 @@ class PolicyGradientAgent:
 
         step_count = 0
         while True:
+            while self.batch_episode_counter < BUFFER_SIZE:
+                pol_step_result = self.policy.play(
+                    env_step_result['stacked_observation'], self.sess)
 
-            pol_step_result = self.policy.play(
-                env_step_result['stacked_observation'], self.sess)
+                save_result.update(pol_step_result)
+                save_result["state"] = env_step_result['stacked_observation']
+                save_result["done"] = env_step_result['done']
 
-            save_result.update(pol_step_result)
-            save_result["state"] = env_step_result['stacked_observation']
-            save_result["done"] = env_step_result['done']
+                env_step_result = self.env.step(pol_step_result['action'])
+                save_result["reward"] = env_step_result['reward']
 
-            env_step_result = self.env.step(pol_step_result['action'])
-            save_result["reward"] = env_step_result['reward']
+                self.memory.save(save_result)
 
-            self.memory.save(save_result)
+                if env_step_result["done"]:
+                    self.batch_episode_counter += 1
 
-            if(step_count % 100 == 0):
-                self.memory.compute_true_value()
-                rollout_res = self.memory.get_rollout()
-                opt_result = self.policy.optimize(
-                    rollout_res["states"],
-                    rollout_res["actions"],
-                    rollout_res["values"],
-                    rollout_res["advantages"], self.sess)
+            self.memory.compute_true_value()
+            rollout_res = self.memory.get_rollout()
+            opt_result = self.policy.optimize(
+                rollout_res["states"],
+                rollout_res["actions"],
+                rollout_res["values"],
+                rollout_res["advantages"], self.sess)
 
-            if(step_count % 1000 == 0):
-                self.memory.clear()
-                log_memmory_usage()
+            self.memory.clear()
+            log_memmory_usage()
 
-            step_count += 1
 
+
+            
         while True:
 
             while self.batch_episode_counter < BUFFER_SIZE:
