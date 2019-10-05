@@ -64,15 +64,14 @@ class PolicyGradientAgent:
 
             self.memory.save(save_result)
 
-            self.memory.compute_true_value()
-
-            rollout_res = self.memory.get_rollout()
-
-            opt_result = self.policy.optimize(
-                rollout_res["states"],
-                rollout_res["actions"],
-                rollout_res["values"],
-                rollout_res["advantages"], self.sess)
+            if(step_count % 100 == 0):
+                self.memory.compute_true_value()
+                rollout_res = self.memory.get_rollout()
+                opt_result = self.policy.optimize(
+                    rollout_res["states"],
+                    rollout_res["actions"],
+                    rollout_res["values"],
+                    rollout_res["advantages"], self.sess)
 
             if(step_count % 1000 == 0):
                 self.memory.clear()
