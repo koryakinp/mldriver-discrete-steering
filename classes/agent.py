@@ -51,7 +51,11 @@ class PolicyGradientAgent:
 
         step_count = 0
         while True:
-            self.env.step(0)
+
+            pol_step_result = self.policy.play(
+                env_step_result['stacked_observation'], self.sess)
+            env_step_result = self.env.step(pol_step_result['action'])
+            
             if(step_count % 1000 == 0):
                 log_memmory_usage()
             step_count += 1
