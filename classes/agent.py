@@ -118,7 +118,7 @@ class PolicyGradientAgent:
                 sum1 = summary.summarize(all_objects)
 
                 # [item for item in sum1 if item.n == 30]
-                print(vars(sum1[0]))
+                print(sum1[0])
                 # for item in sum1:
                     # print(vars(item))
                     #logging.info(item.)
