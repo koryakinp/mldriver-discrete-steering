@@ -119,10 +119,10 @@ class PolicyGradientAgent:
 
                 total = [x[2] for x in sum1]
                 total = sum(total)
-                print(total)
+                print("Total Sum: {0}".format(total/1024*1024))
 
                 for item in sum1[:15]:
-                    msg = 'Name: {0} | Count: {1} | Memory {2} MB'.format(item[0], item[1], item[2]/1024)
+                    msg = 'Name: {0} | Count: {1} | Memory {2} MB'.format(item[0], item[1], item[2]/1024*1024)
                     logging.info(msg)
 
                 summary.print_(sum1)
