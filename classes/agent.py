@@ -77,6 +77,8 @@ class PolicyGradientAgent:
                 rollout_res["advantages"], self.sess)
 
             self.memory.clear()
+            self.check_model()
+            self.save_model()
             log_memmory_usage()
 
 
