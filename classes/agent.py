@@ -53,7 +53,7 @@ class PolicyGradientAgent:
         while True:
             self.env.step(0)
             if(step_count % 1000 == 0):
-                log_memmory_usage
+                log_memmory_usage()
             step_count += 1
 
         while True:
