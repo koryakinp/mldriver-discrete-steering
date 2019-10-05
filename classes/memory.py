@@ -19,8 +19,6 @@ class Memory:
         r = save_result["reward"]
         done = save_result["done"]
         v = save_result["value"]
-        frame = save_result["frame"]
-        frame = np.transpose(frame, [2, 0, 1])
 
         transition = Transition(s, a, r, v, done)
         self.transitions = np.append(self.transitions, transition)

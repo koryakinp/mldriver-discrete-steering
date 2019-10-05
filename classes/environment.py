@@ -41,7 +41,6 @@ class Environment:
 
         res = {
             "stacked_observation": stacked_observation,
-            "visual_observation": visual_observation,
             "done": done
         }
 
@@ -69,7 +68,6 @@ class Environment:
 
         res = {
             "stacked_observation": stacked_observation,
-            "visual_observation": visual_observation,
             "reward": reward,
             "done": done
         }
