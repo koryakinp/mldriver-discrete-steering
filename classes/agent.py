@@ -54,10 +54,20 @@ class PolicyGradientAgent:
 
             pol_step_result = self.policy.play(
                 env_step_result['stacked_observation'], self.sess)
+
+            save_result.update(pol_step_result)
+            save_result["state"] = env_step_result['stacked_observation']
+            save_result["done"] = env_step_result['done']
+
             env_step_result = self.env.step(pol_step_result['action'])
-            
+            save_result["reward"] = env_step_result['reward']
+
+            self.memory.save(save_result)
+
             if(step_count % 1000 == 0):
+                self.memory.clear()
                 log_memmory_usage()
+                
             step_count += 1
 
         while True:
