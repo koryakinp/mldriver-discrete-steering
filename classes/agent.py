@@ -118,9 +118,6 @@ class PolicyGradientAgent:
                 sum1 = summary.summarize(all_objects)
 
                 total = [x[2] for x in sum1]
-                print(total)
-                total = total/1024
-                print(total)
                 total = sum(total)
                 print(total)
 
