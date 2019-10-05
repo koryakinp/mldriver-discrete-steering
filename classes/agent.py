@@ -113,21 +113,7 @@ class PolicyGradientAgent:
             if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
-
-                all_objects = muppy.get_objects()
-                sum1 = summary.summarize(all_objects)
-
-                sum1.sort(key=lambda x: x[2], reverse=True)
-
-                total = [x[2] for x in sum1]
-                total = sum(total)
-                print("Total Sum: {0:.2f} MB".format(total/(1024*1024)))
-
-                for item in sum1[:15]:
-                    msg = 'Name: {0} | Count: {1} | Memory {2:.2f} MB'.format(item[0], item[1], item[2]/(1024*1024))
-                    logging.info(msg)
-
-                summary.print_(sum1)
+                log_memmory_usage()
 
             del rollout_res
             del opt_result
