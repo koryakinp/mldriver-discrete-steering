@@ -117,6 +117,8 @@ class PolicyGradientAgent:
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
 
+                sum1.sort(key=lambda x: x[2], reverse=True)
+
                 total = [x[2] for x in sum1]
                 total = sum(total)
                 print("Total Sum: {0}".format(total/1024*1024))
