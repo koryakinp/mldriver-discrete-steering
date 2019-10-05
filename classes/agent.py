@@ -67,6 +67,7 @@ class PolicyGradientAgent:
                 if env_step_result["done"]:
                     self.batch_episode_counter += 1
 
+            self.batch_episode_counter = 0
             self.memory.compute_true_value()
             rollout_res = self.memory.get_rollout()
             opt_result = self.policy.optimize(
@@ -80,7 +81,7 @@ class PolicyGradientAgent:
 
 
 
-            
+
         while True:
 
             while self.batch_episode_counter < BUFFER_SIZE:
