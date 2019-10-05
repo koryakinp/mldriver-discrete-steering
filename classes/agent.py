@@ -208,7 +208,7 @@ def log_memmory_usage(prev_summary):
                 diff_memory = cur_item["memory"] - prev_item["memory"]
 
                 msg = "Name: {0} | Count: {1} | Memory: {2}".format(
-                    cur_summary["key"], diff_count, diff_memory)
+                    cur_item["key"], diff_count, diff_memory)
                 logging.info(msg)
                 
 
