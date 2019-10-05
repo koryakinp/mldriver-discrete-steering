@@ -78,7 +78,7 @@ class PolicyGradientAgent:
 
             self.memory.clear()
             self.check_model()
-            self.save_model()
+            # self.save_model()
             log_memmory_usage()
 
 
