@@ -117,11 +117,9 @@ class PolicyGradientAgent:
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
 
-                # [item for item in sum1 if item.n == 30]
-                print(sum1[0])
-                # for item in sum1:
-                    # print(vars(item))
-                    #logging.info(item.)
+                for item in sum1[:15]:
+                    msg = 'Name: {0} | Count: {1} | Memory {2} MB'.format(item[0], item[1], item[2]/1024)
+                    logging.info(msg)
 
                 summary.print_(sum1)
 
