@@ -203,9 +203,9 @@ def log_memmory_usage(prev_summary):
 
     for cur_item in cur_summary:
         for prev_item in prev_summary:
-            if(cur_summary["key"] == prev_item["key"] and cur_item["count"] != prev_item["count"]):
-                diff_count = cur_summary["count"] - prev_item["count"]
-                diff_memory = cur_summary["memory"] - prev_item["memory"]
+            if(cur_item["key"] == prev_item["key"] and cur_item["count"] != prev_item["count"]):
+                diff_count = cur_item["count"] - prev_item["count"]
+                diff_memory = cur_item["memory"] - prev_item["memory"]
 
                 msg = "Name: {0} | Count: {1} | Memory: {2}".format(
                     cur_summary["key"], diff_count, diff_memory)
