@@ -116,6 +116,10 @@ class PolicyGradientAgent:
 
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
+
+                for item in sum1:
+                    logging.info(item)
+
                 summary.print_(sum1)
 
             del rollout_res
