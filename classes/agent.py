@@ -49,45 +49,8 @@ class PolicyGradientAgent:
 
         logging.info('Starting trainig loop..')
 
-        step_count = 0
         while True:
             while self.batch_episode_counter < BUFFER_SIZE:
-                pol_step_result = self.policy.play(
-                    env_step_result['stacked_observation'], self.sess)
-
-                save_result.update(pol_step_result)
-                save_result["state"] = env_step_result['stacked_observation']
-                save_result["done"] = env_step_result['done']
-
-                env_step_result = self.env.step(pol_step_result['action'])
-                save_result["reward"] = env_step_result['reward']
-
-                self.memory.save(save_result)
-
-                if env_step_result["done"]:
-                    self.batch_episode_counter += 1
-
-            self.batch_episode_counter = 0
-            self.memory.compute_true_value()
-            rollout_res = self.memory.get_rollout()
-            opt_result = self.policy.optimize(
-                rollout_res["states"],
-                rollout_res["actions"],
-                rollout_res["values"],
-                rollout_res["advantages"], self.sess)
-
-            self.memory.clear()
-            # self.check_model()
-            self.save_model()
-            log_memmory_usage()
-
-
-
-
-        while True:
-
-            while self.batch_episode_counter < BUFFER_SIZE:
-
                 pol_step_result = self.policy.play(
                     env_step_result['stacked_observation'], self.sess)
 
@@ -117,28 +80,27 @@ class PolicyGradientAgent:
                 rollout_res["values"],
                 rollout_res["advantages"], self.sess)
 
+            episode_len = len(rollout_res["actions"])/BUFFER_SIZE
+            episode_reward = sum(rollout_res["rewards"])/BUFFER_SIZE
 
-            # episode_len = len(rollout_res["actions"])/BUFFER_SIZE
-            # episode_reward = sum(rollout_res["rewards"])/BUFFER_SIZE
+            self.log_scalar(
+               'value_loss', opt_result["value_loss"], self.global_step)
+            self.log_scalar(
+               'policy_loss', opt_result["policy_loss"], self.global_step)
+            self.log_scalar(
+               'entropy', opt_result["entropy"], self.global_step)
+            self.log_scalar(
+               'total_loss', opt_result["total_loss"], self.global_step)
+            self.log_scalar(
+               'episode_length', episode_len, self.global_step)
+            self.log_scalar(
+               'episode_reward', episode_reward, self.global_step)
 
-            # self.log_scalar(
-            #    'value_loss', opt_result["value_loss"], self.global_step)
-            # self.log_scalar(
-            #    'policy_loss', opt_result["policy_loss"], self.global_step)
-            # self.log_scalar(
-            #    'entropy', opt_result["entropy"], self.global_step)
-            # self.log_scalar(
-            #    'total_loss', opt_result["total_loss"], self.global_step)
-            # self.log_scalar(
-            #    'episode_length', episode_len, self.global_step)
-            # self.log_scalar(
-            #    'episode_reward', episode_reward, self.global_step)
-
-            # if rollout_res["record_beaten"]:
-            #    best_score = self.memory.get_best()
-            #    self.record_score = best_score
-            #    self.sess.run(tf.assign(self.RECORD, self.record_score))
-            #    logging.info('Record beaten: {0}'.format(best_score))
+            if rollout_res["record_beaten"]:
+               best_score = self.memory.get_best()
+               self.record_score = best_score
+               self.sess.run(tf.assign(self.RECORD, self.record_score))
+               logging.info('Record beaten: {0}'.format(best_score))
 
             self.memory.clear()
 
