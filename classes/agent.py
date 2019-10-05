@@ -49,6 +49,13 @@ class PolicyGradientAgent:
 
         logging.info('Starting trainig loop..')
 
+        step_count = 0
+        while True:
+            self.env.step(0)
+            if(step_count % 1000 == 0):
+                log_memmory_usage
+
+
         while True:
 
             while self.batch_episode_counter < BUFFER_SIZE:
