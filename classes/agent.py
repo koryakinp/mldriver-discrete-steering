@@ -110,7 +110,6 @@ class PolicyGradientAgent:
                 path = os.path.join('output', self.experiment_id, 'checkpoints')
                 latest_checkpoint = tf.train.latest_checkpoint(path)
                 self.saver.restore(self.sess, latest_checkpoint)
-                self.sess = get_session(self.experiment_id)
 
             del rollout_res
             del opt_result
