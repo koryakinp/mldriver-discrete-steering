@@ -12,6 +12,7 @@ import logging
 import moviepy.editor as mpy
 import tempfile
 from PIL import Image, ImageDraw, ImageFont
+from utils import *
 
 
 class PolicyGradientAgent:
@@ -105,6 +106,8 @@ class PolicyGradientAgent:
                 self.check_model()
                 self.save_model()
                 log_memmory_usage()
+                tf.compat.v1.keras.backend.clear_session()
+                self.sess = get_session(self.experiment_id)
 
             del rollout_res
             del opt_result
