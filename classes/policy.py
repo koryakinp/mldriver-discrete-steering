@@ -84,9 +84,9 @@ class Policy():
     def optimize(self, s, a, r, adv, sess):
         logging.info('optimize start')
         logging.info(str(s.shape))
-        logging.info(str(a.shape))
-        logging.info(str(adv.shape))
-        logging.info(str(r.shape))
+        logging.info(str(len(a)))
+        logging.info(str(len(adv)))
+        logging.info(str(len(r)))
         pl, vl, ent, total, _ = sess.run([
             self.policy_loss,
             self.value_loss,
