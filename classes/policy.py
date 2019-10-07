@@ -70,6 +70,7 @@ class Policy():
 
     def play(self, ob, sess):
         logging.info('play start')
+        logging.info(str(ob.shape))
         a, v = sess.run([self.a0, self.v0], {self.X: ob})
         logging.info('play end')
 
@@ -82,6 +83,10 @@ class Policy():
 
     def optimize(self, s, a, r, adv, sess):
         logging.info('optimize start')
+        logging.info(str(s.shape))
+        logging.info(str(a.shape))
+        logging.info(str(adv.shape))
+        logging.info(str(r.shape))
         pl, vl, ent, total, _ = sess.run([
             self.policy_loss,
             self.value_loss,
