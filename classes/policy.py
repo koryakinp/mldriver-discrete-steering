@@ -69,10 +69,7 @@ class Policy():
         self.adam = tf.train.RMSPropOptimizer(LR).minimize(self.loss)
 
     def play(self, ob, sess):
-        logging.info('play start')
-        logging.info(str(ob.shape))
         a, v = sess.run([self.a0, self.v0], {self.X: ob})
-        logging.info('play end')
 
         res = {
             "action": a,
@@ -82,11 +79,7 @@ class Policy():
         return res
 
     def optimize(self, s, a, r, adv, sess):
-        logging.info('optimize start')
-        logging.info(str(s.shape))
-        logging.info(str(len(a)))
-        logging.info(str(len(adv)))
-        logging.info(str(len(r)))
+
         pl, vl, ent, total, _ = sess.run([
             self.policy_loss,
             self.value_loss,
@@ -97,7 +90,6 @@ class Policy():
                 self.A: a,
                 self.ADV: adv,
                 self.R: r})
-        logging.info('optimize end')
 
         res = {
             "policy_loss": pl,
