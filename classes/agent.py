@@ -16,14 +16,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 class PolicyGradientAgent:
 
-    def __init__(self, env, experiment_id):
+    def __init__(self, env, cfg, experiment_id):
         self.env = env
         self.GS = tf.Variable(
             0, name='global_step', trainable=False, dtype=tf.int32)
         self.RECORD = tf.Variable(
             0, name='record', trainable=False, dtype=tf.float32)
-        self.policy = Policy([
-            OBS_SIZE, OBS_SIZE, FRAMES_LOOKBACK], NUMBER_OF_ACTIONS)
+        self.policy = Policy(cfg)
         self.sess = get_session(experiment_id)
         self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
         self.record_run = self.sess.run(self.RECORD)
@@ -38,14 +37,13 @@ class PolicyGradientAgent:
 
     def learn(self):
 
-        step_result = self.env.start_episode()
-
-        self.memory.save_state(step_result['stacked_observation'])
-        self.memory.save_frame(step_result['visual_observation'])
-
-        logging.info('Starting trainig loop..')
-
         while True:
+
+            step_result = self.env.start_episode()
+
+            self.memory.save_state(step_result['stacked_observation'])
+            self.memory.save_frame(step_result['visual_observation'])
+
             while not step_result["done"]:
                 a, v = self.policy.play(
                     step_result['stacked_observation'], self.sess)
