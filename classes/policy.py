@@ -69,13 +69,7 @@ class Policy():
 
     def play(self, ob, sess):
         a, v = sess.run([self.a0, self.v0], {self.X: ob})
-
-        res = {
-            "action": a,
-            "value": v
-        }
-
-        return res
+        return a, v
 
     def optimize(self, s, a, r, adv, sess):
         pl, vl, ent, total, _ = sess.run([

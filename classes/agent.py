@@ -38,71 +38,46 @@ class PolicyGradientAgent:
 
     def learn(self):
 
-        env_step_result = self.env.start_episode()
-        save_result = {
-            "state": None,
-            "action": None,
-            "reward": None,
-            "value": None,
-            "frame": None
-        }
+        step_result = self.env.start_episode()
+
+        self.memory.save_state(step_result['stacked_observation'])
+        self.memory.save_frame(step_result['visual_observation'])
 
         logging.info('Starting trainig loop..')
 
         while True:
+            while not step_result["done"]:
+                a, v = self.policy.play(
+                    step_result['stacked_observation'], self.sess)
 
-            while self.batch_episode_counter < BUFFER_SIZE:
+                self.memory.save_value(v)
+                self.memory.save_action(a)
 
-                pol_step_result = self.policy.play(
-                    env_step_result['stacked_observation'], self.sess)
+                step_result = self.env.step(a)
 
-                save_result.update(pol_step_result)
-                save_result["state"] = env_step_result['stacked_observation']
-                save_result["frame"] = env_step_result['visual_observation']
-                save_result["done"] = env_step_result['done']
+                self.memory.save_state(step_result['stacked_observation'])
+                self.memory.save_frame(step_result['visual_observation'])
+                self.memory.save_reward(step_result['reward'])
 
-                env_step_result = self.env.step(pol_step_result['action'])
-                save_result["reward"] = env_step_result['reward']
+            logging.info('Episode: {0}'.format(self.global_step))
 
-                self.memory.save(save_result)
+            opt_res = self.policy.optimize(
+                self.memory.states,
+                self.memory.actions,
+                self.memory.values,
+                self.memory.get_advantages(), self.sess)
 
-                if env_step_result["done"]:
-                    self.batch_episode_counter += 1
-                    msg = 'Episode: {0} | Batch: {1}'.format(
-                        self.batch_episode_counter, self.global_step)
-                    logging.info(msg)
+            episode_reward = sum(self.memory.rewards)
 
-            self.batch_episode_counter = 0
-            self.memory.compute_true_value()
+            self.log('value_loss', opt_res["value_loss"], self.global_step)
+            self.log('policy_loss', opt_res["policy_loss"], self.global_step)
+            self.log('entropy', opt_res["entropy"], self.global_step)
+            self.log('total_loss', opt_res["total_loss"], self.global_step)
+            self.log_gif('reward', episode_reward, self.global_step)
 
-            rollout_res = self.memory.get_rollout()
-
-            opt_result = self.policy.optimize(
-                rollout_res["states"],
-                rollout_res["actions"],
-                rollout_res["values"],
-                rollout_res["advantages"], self.sess)
-
-            episode_len = len(rollout_res["actions"])/BUFFER_SIZE
-            episode_reward = sum(rollout_res["rewards"])/BUFFER_SIZE
-
-            self.log_scalar(
-                'value_loss', opt_result["value_loss"], self.global_step)
-            self.log_scalar(
-                'policy_loss', opt_result["policy_loss"], self.global_step)
-            self.log_scalar(
-                'entropy', opt_result["entropy"], self.global_step)
-            self.log_scalar(
-                'total_loss', opt_result["total_loss"], self.global_step)
-            self.log_scalar(
-                'episode_length', episode_len, self.global_step)
-            self.log_scalar(
-                'episode_reward', episode_reward, self.global_step)
-
-            if rollout_res["record_beaten"]:
-                best_score, best_run = self.memory.get_best()
-                self.log_gif('best_run', best_run, self.global_step)
-                self.record_score = best_score
+            if episode_reward > self.record_run:
+                self.log_gif('best_run', self.memory.frames, self.global_step)
+                self.record_score = episode_reward
                 self.sess.run(tf.assign(self.RECORD, self.record_score))
                 logging.info('Record beaten: {0}'.format(best_score))
 

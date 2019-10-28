@@ -5,7 +5,6 @@ import unittest
 from unittest.mock import Mock
 from consts import *
 import numpy as np
-sys.path.append('../mlagents')
 from mlagents.envs import UnityEnvironment
 
 
@@ -32,10 +31,10 @@ def fill_step_mock(brain, arr):
     }
 
 
-class Test_Environemnt(unittest.TestCase):
+class TestEnvironment(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
-        super(Test_Environemnt, self).__init__(*args, **kwargs)
+        super(TestEnvironment, self).__init__(*args, **kwargs)
 
     def setUp(self):
         self.env_provider_mock = Mock(spec=UnityEnvironmentProvider)
@@ -47,19 +46,18 @@ class Test_Environemnt(unittest.TestCase):
         self.env_mock.step.return_value = fill_step_mock(
             self.brain_name, np.random.rand(10, 10, 1))
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 5, 4, False)
-        reward, state, done = env.step(1)
-
-        self.assertEquals(state.shape, (1, 10, 10, 5))
+        env = Environment(self.env_provider_mock, 10, 5, 4, False)
+        res = env.step(1)
+        self.assertEqual(res["stacked_observation"].shape, (1, 10, 10, 5))
 
     def test_step_2(self):
         self.env_mock.step.return_value = fill_step_mock(
             self.brain_name, np.random.rand(10, 10, 1))
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 5, 4, True)
-        reward, state, done = env.step(1)
+        env = Environment(self.env_provider_mock, 10, 5, 4, True)
+        res = env.step(1)
 
-        self.assertEquals(state.shape, (1, 10, 10, 5))
+        self.assertEqual(res["stacked_observation"].shape, (1, 10, 10, 5))
 
     def test_step_3(self):
 
@@ -78,24 +76,32 @@ class Test_Environemnt(unittest.TestCase):
         self.env_mock.step = vo_mock
 
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 5, 0, True)
+        env = Environment(self.env_provider_mock, 10, 5, 0, True)
 
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, 0, 0, 0, 0]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, 0, 0, 0, 6]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, 0, 0, 6, -21]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, 0, 6, -21, 9]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, 6, -21, 9, -2]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [6, -21, 9, -2, 5]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [-21, 9, -2, 5, -4]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [9, -2, 5, -4, 9]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [0, 0, 0, 0, 0]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [0, 0, 0, 0, 6]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [0, 0, 0, 6, -21]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [0, 0, 6, -21, 9]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [0, 6, -21, 9, -2]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [6, -21, 9, -2, 5]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [-21, 9, -2, 5, -4]))
+        res = env.step(1)
+        self.assertTrue(
+            frames_helper(res["stacked_observation"], [9, -2, 5, -4, 9]))
 
     def test_step_4(self):
 
@@ -114,24 +120,25 @@ class Test_Environemnt(unittest.TestCase):
         self.env_mock.step = vo_mock
 
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 2, 2, True)
+        env = Environment(self.env_provider_mock, 10, 2, 2, True)
 
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, 0]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, 6]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, -15]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [0, -6]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [6, -14]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [-15, 12]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [-6, -1]))
-        reward, state, done = env.step(1)
-        self.assertTrue(frames_helper(state, [-14, 10]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [0, 0]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [0, 6]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [0, -15]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [0, -6]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [6, -14]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [-15, 12]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [-6, -1]))
+        res = env.step(1)
+        self.assertTrue(frames_helper(res["stacked_observation"], [-14, 10]))
+
 
 if __name__ == '__main__':
     unittest.main()
