@@ -57,15 +57,10 @@ def tensor_to_gif_summ(summ):
         tag = value.tag
         images_arr = tf.make_ndarray(value.tensor)
 
-        if len(images_arr.shape) == 5:
-            # concatenate batch dimension horizontally
-            images_arr = np.concatenate(list(images_arr), axis=-2)
         if len(images_arr.shape) != 4:
-            raise ValueError('Tensors must be 4-D or 5-D for gif summary.')
+            raise ValueError('Tensors must be 4-D')
         if images_arr.shape[-1] != 1:
-            raise ValueError('Tensors must have 3 channels.')
-
-        print(images_arr.shape)
+            raise ValueError('Tensors must have 1 channel')
 
         # encode sequence of images into gif string
         clip = mpy.ImageSequenceClip(list(images_arr), fps=30)

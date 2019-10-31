@@ -13,7 +13,7 @@ class Config:
             "CHECKPOINT_FILE": "mldriver.ckpt",
             "NUMBER_OF_ACTIONS": 3,
             "GAMMA": None,
-            "LR": None,
+            "LEARNING_RATE": None,
             "FRAMES_LOOKBACK": None,
             "FRAMES_SKIP": None,
             "BUFFER_SIZE": None,
@@ -26,7 +26,7 @@ class Config:
             with open(path) as f:
                 values = json.load(f)
                 self.set_value(values, "GAMMA")
-                self.set_value(values, "LR")
+                self.set_value(values, "LEARNING_RATE")
                 self.set_value(values, "FRAMES_LOOKBACK")
                 self.set_value(values, "FRAMES_SKIP")
                 self.set_value(values, "BUFFER_SIZE")

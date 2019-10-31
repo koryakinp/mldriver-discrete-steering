@@ -26,13 +26,12 @@ class PolicyGradientAgent:
         self.sess = get_session(experiment_id)
         self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
         self.record_run = self.sess.run(self.RECORD)
-        self.memory = Memory(self.record_run)
+        self.memory = Memory(cfg)
         self.saver = tf.train.Saver(max_to_keep=0)
         self.experiment_id = experiment_id
         self.summ_writer = tf.summary.FileWriter(
             os.path.join('output', experiment_id, 'summaries'),
             self.sess.graph)
-        self.record_score = 0
         self.batch_episode_counter = 0
 
     def learn(self):
@@ -60,9 +59,9 @@ class PolicyGradientAgent:
             logging.info('Episode: {0}'.format(self.global_step))
 
             opt_res = self.policy.optimize(
-                self.memory.states,
-                self.memory.actions,
-                self.memory.values,
+                self.memory.get_states(),
+                self.memory.get_actions(),
+                self.memory.get_true_values(),
                 self.memory.get_advantages(), self.sess)
 
             episode_reward = sum(self.memory.rewards)
@@ -71,13 +70,14 @@ class PolicyGradientAgent:
             self.log('policy_loss', opt_res["policy_loss"], self.global_step)
             self.log('entropy', opt_res["entropy"], self.global_step)
             self.log('total_loss', opt_res["total_loss"], self.global_step)
-            self.log_gif('reward', episode_reward, self.global_step)
+            self.log('reward', episode_reward, self.global_step)
 
             if episode_reward > self.record_run:
-                self.log_gif('best_run', self.memory.frames, self.global_step)
-                self.record_score = episode_reward
-                self.sess.run(tf.assign(self.RECORD, self.record_score))
-                logging.info('Record beaten: {0}'.format(best_score))
+                frames = self.memory.get_frames()
+                self.log_gif('best_run', frames, self.global_step)
+                self.record_run = episode_reward
+                self.sess.run(tf.assign(self.RECORD, self.record_run))
+                logging.info('Record beaten: {0}'.format(self.record_run))
 
             self.memory.clear()
 
@@ -91,8 +91,7 @@ class PolicyGradientAgent:
                 sum1 = summary.summarize(all_objects)
                 summary.print_(sum1)
 
-            del rollout_res
-            del opt_result
+            del opt_res
 
             all_objects = None
             sum1 = None
@@ -112,7 +111,7 @@ class PolicyGradientAgent:
         self.saver.save(
             self.sess, path, self.global_step, write_meta_graph=False)
 
-    def log_scalar(self, tag, value, step):
+    def log(self, tag, value, step):
         summary = tf.Summary(
             value=[tf.Summary.Value(tag=tag, simple_value=value)])
         self.summ_writer.add_summary(summary, step)
@@ -120,6 +119,8 @@ class PolicyGradientAgent:
         logging.info(msg)
 
     def log_gif(self, tag, images, step):
+        images = np.array(images)
+        images = tf.convert_to_tensor(images)
         tensor_summ = tf.summary.tensor_summary(tag, images)
         tensor_value = self.sess.run(tensor_summ)
         self.summ_writer.add_summary(tensor_to_gif_summ(tensor_value), step)

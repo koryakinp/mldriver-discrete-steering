@@ -28,6 +28,9 @@ class Policy():
         obs_size = cfg.get('OBS_SIZE')
         obs_depth = cfg.get('FRAMES_LOOKBACK')
         num_of_actions = cfg.get('NUMBER_OF_ACTIONS')
+        value_loss_coefficient = cfg.get('VALUE_LOSS_K')
+        entropy_coefficient = cfg.get('ENTROPY_K')
+        learning_rate = cfg.get('LEARNING_RATE')
 
         self.X = tf.placeholder(
             tf.float32, [None, obs_size, obs_size, obs_depth])
@@ -44,7 +47,7 @@ class Policy():
         flat = tf.layers.flatten(h3)
         h4 = fc(flat, 512, act=tf.nn.elu)
         h5 = fc(h4, 256, act=tf.nn.elu)
-        actor = fc(h5, ac_space, act=None)
+        actor = fc(h5, num_of_actions, act=None)
         critic = fc(h5, 1, act=None)
 
         self.v0 = tf.squeeze(critic)
@@ -66,10 +69,11 @@ class Policy():
 
         self.loss = \
             self.policy_loss + \
-            self.value_loss * VALUE_LOSS_K - \
-            self.entropy * ENTROPY_K
+            self.value_loss * value_loss_coefficient - \
+            self.entropy * entropy_coefficient
 
-        self.adam = tf.train.RMSPropOptimizer(LR).minimize(self.loss)
+        self.adam = tf.train.RMSPropOptimizer(
+            learning_rate).minimize(self.loss)
 
     def play(self, ob, sess):
         a, v = sess.run([self.a0, self.v0], {self.X: ob})

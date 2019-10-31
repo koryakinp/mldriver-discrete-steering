@@ -25,13 +25,19 @@ class Memory:
     def save_frame(self, f):
         self.frames.append(np.transpose(f, [2, 0, 1]))
 
+    def get_actions(self):
+        return np.array(self.actions)
+
+    def get_states(self):
+        return np.squeeze(self.states, axis=1)[:-1]
+
     def get_advantages(self):
         return np.array(self.rewards) + \
             np.full(len(self.rewards), self.GAMMA) * \
             np.append(self.values[1:], 0) - \
             np.array(self.values)
 
-    def get_true_value(self):
+    def get_true_values(self):
         temp = 0
         res = np.zeros(len(self.rewards))
         for (idx, reward) in enumerate(self.rewards[::-1]):
@@ -39,6 +45,9 @@ class Memory:
             temp = res[idx]
 
         return res
+
+    def get_frames(self):
+        return np.swapaxes(self.frames, 1, 3)
 
     def clear(self):
         self.states = []
