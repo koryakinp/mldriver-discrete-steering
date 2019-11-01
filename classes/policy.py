@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from consts import *
+import logging
 
 
 def conv(inputs, nf, ks, strides):
@@ -72,6 +73,7 @@ class Policy():
         return a, v
 
     def optimize(self, s, a, r, adv, sess):
+
         pl, vl, ent, total, _ = sess.run([
             self.policy_loss,
             self.value_loss,

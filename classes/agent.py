@@ -12,6 +12,7 @@ import logging
 import moviepy.editor as mpy
 import tempfile
 from PIL import Image, ImageDraw, ImageFont
+from utils import *
 
 
 class PolicyGradientAgent:
@@ -35,6 +36,7 @@ class PolicyGradientAgent:
             self.sess.graph)
         self.record_score = 0
         self.batch_episode_counter = 0
+        self.prev_summary = []
 
     def learn(self):
 
@@ -83,21 +85,18 @@ class PolicyGradientAgent:
 
             self.memory.clear()
 
-            print('=======')
-
             if self.global_step % SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
-
-                all_objects = muppy.get_objects()
-                sum1 = summary.summarize(all_objects)
-                summary.print_(sum1)
+                log_memmory_usage()
+                tf.compat.v1.keras.backend.clear_session()
+                path = os.path.join('output', self.experiment_id, 'checkpoints')
+                latest_checkpoint = tf.train.latest_checkpoint(path)
+                self.saver.restore(self.sess, latest_checkpoint)
 
             del rollout_res
             del opt_result
-
-            all_objects = None
-            sum1 = None
+            del pol_step_result
 
             self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
 
