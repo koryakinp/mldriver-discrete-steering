@@ -1,9 +1,9 @@
 import sys
 from classes.environment import Environment
+from classes.config import Config
 from classes.unity_env_provider import UnityEnvironmentProvider
 import unittest
 from unittest.mock import Mock
-from consts import *
 import numpy as np
 from mlagents.envs import UnityEnvironment
 
@@ -33,9 +33,6 @@ def fill_step_mock(brain, arr):
 
 class TestEnvironment(unittest.TestCase):
 
-    def __init__(self, *args, **kwargs):
-        super(TestEnvironment, self).__init__(*args, **kwargs)
-
     def setUp(self):
         self.env_provider_mock = Mock(spec=UnityEnvironmentProvider)
         self.env_mock = Mock(spec=UnityEnvironment)
@@ -46,7 +43,12 @@ class TestEnvironment(unittest.TestCase):
         self.env_mock.step.return_value = fill_step_mock(
             self.brain_name, np.random.rand(10, 10, 1))
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 10, 5, 4, False)
+        cfg = Config('tests/config.json')
+        cfg.set_config_value('OBS_SIZE', 10)
+        cfg.set_config_value('FRAMES_SKIP', 4)
+        cfg.set_config_value('FRAMES_LOOKBACK', 5)
+        cfg.set_config_value('USE_DIFF', False)
+        env = Environment(self.env_provider_mock, cfg)
         res = env.step(1)
         self.assertEqual(res["stacked_observation"].shape, (1, 10, 10, 5))
 
@@ -54,7 +56,14 @@ class TestEnvironment(unittest.TestCase):
         self.env_mock.step.return_value = fill_step_mock(
             self.brain_name, np.random.rand(10, 10, 1))
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 10, 5, 4, True)
+
+        cfg = Config('tests/config.json')
+        cfg.set_config_value('OBS_SIZE', 10)
+        cfg.set_config_value('FRAMES_SKIP', 4)
+        cfg.set_config_value('FRAMES_LOOKBACK', 5)
+        cfg.set_config_value('USE_DIFF', True)
+
+        env = Environment(self.env_provider_mock, cfg)
         res = env.step(1)
 
         self.assertEqual(res["stacked_observation"].shape, (1, 10, 10, 5))
@@ -74,9 +83,15 @@ class TestEnvironment(unittest.TestCase):
         ]
 
         self.env_mock.step = vo_mock
-
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 10, 5, 0, True)
+
+        cfg = Config('tests/config.json')
+        cfg.set_config_value('OBS_SIZE', 10)
+        cfg.set_config_value('FRAMES_SKIP', 0)
+        cfg.set_config_value('FRAMES_LOOKBACK', 5)
+        cfg.set_config_value('USE_DIFF', True)
+
+        env = Environment(self.env_provider_mock, cfg)
 
         res = env.step(1)
         self.assertTrue(
@@ -120,7 +135,14 @@ class TestEnvironment(unittest.TestCase):
         self.env_mock.step = vo_mock
 
         self.env_provider_mock.provide.return_value = self.env_mock
-        env = Environment(self.env_provider_mock, 10, 2, 2, True)
+
+        cfg = Config('tests/config.json')
+        cfg.set_config_value('OBS_SIZE', 10)
+        cfg.set_config_value('FRAMES_SKIP', 2)
+        cfg.set_config_value('FRAMES_LOOKBACK', 2)
+        cfg.set_config_value('USE_DIFF', True)
+
+        env = Environment(self.env_provider_mock, cfg)
 
         res = env.step(1)
         self.assertTrue(frames_helper(res["stacked_observation"], [0, 0]))

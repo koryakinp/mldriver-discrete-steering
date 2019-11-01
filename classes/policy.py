@@ -1,7 +1,5 @@
 import numpy as np
 import tensorflow as tf
-from consts import *
-import logging
 
 
 def conv(inputs, nf, ks, strides):
@@ -25,9 +23,17 @@ def fc(inputs, n, act=tf.nn.relu):
 
 
 class Policy():
-    def __init__(self, ob_space, ac_space):
-        nh, nw, nc = ob_space
-        self.X = tf.placeholder(tf.float32, [None, nh, nw, nc])
+    def __init__(self, cfg):
+
+        obs_size = cfg.get('OBS_SIZE')
+        obs_depth = cfg.get('FRAMES_LOOKBACK')
+        num_of_actions = cfg.get('NUMBER_OF_ACTIONS')
+        value_loss_coefficient = cfg.get('VALUE_LOSS_K')
+        entropy_coefficient = cfg.get('ENTROPY_K')
+        learning_rate = cfg.get('LEARNING_RATE')
+
+        self.X = tf.placeholder(
+            tf.float32, [None, obs_size, obs_size, obs_depth])
 
         self.A = tf.placeholder(tf.int32, [None])
         self.ADV = tf.placeholder(tf.float32, [None])
@@ -41,7 +47,7 @@ class Policy():
         flat = tf.layers.flatten(h3)
         h4 = fc(flat, 512, act=tf.nn.elu)
         h5 = fc(h4, 256, act=tf.nn.elu)
-        actor = fc(h5, ac_space, act=None)
+        actor = fc(h5, num_of_actions, act=None)
         critic = fc(h5, 1, act=None)
 
         self.v0 = tf.squeeze(critic)
@@ -53,7 +59,7 @@ class Policy():
         self.value_loss = tf.reduce_mean(
             tf.square(tf.squeeze(critic) - self.R))
         action_one_hot = tf.one_hot(
-            self.A, NUMBER_OF_ACTIONS, dtype=tf.float32)
+            self.A, num_of_actions, dtype=tf.float32)
         neg_log_prob = -tf.log(tf.clip_by_value(prob, 1e-10, 1.0))
         self.policy_loss = tf.reduce_mean(
             tf.reduce_sum(neg_log_prob * action_one_hot, axis=1) * self.ADV)
@@ -63,10 +69,11 @@ class Policy():
 
         self.loss = \
             self.policy_loss + \
-            self.value_loss * VALUE_LOSS_K - \
-            self.entropy * ENTROPY_K
+            self.value_loss * value_loss_coefficient - \
+            self.entropy * entropy_coefficient
 
-        self.adam = tf.train.RMSPropOptimizer(LR).minimize(self.loss)
+        self.adam = tf.train.RMSPropOptimizer(
+            learning_rate).minimize(self.loss)
 
     def play(self, ob, sess):
         a, v = sess.run([self.a0, self.v0], {self.X: ob})

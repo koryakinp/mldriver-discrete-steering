@@ -1,33 +1,26 @@
 from collections import deque
-from consts import *
 import numpy as np
 import logging
 
 
 class Environment:
-    def __init__(
-            self,
-            env_provider,
-            obs_size,
-            frames_lookback,
-            frames_skip,
-            use_diff):
+    def __init__(self, env_provider, cfg):
         self.env = env_provider.provide()
-        self.obs_size = obs_size
-        self.frames_skip = frames_skip
-        self.frames_lookback = frames_lookback
+        self.obs_size = cfg.get('OBS_SIZE')
+        self.frames_skip = cfg.get('FRAMES_SKIP')
+        self.frames_lookback = cfg.get('FRAMES_LOOKBACK')
+        self.use_diff = cfg.get('USE_DIFF')
         self.default_brain = self.env.brain_names[0]
-        queue_size = frames_lookback + (frames_lookback - 1) * frames_skip
-        if use_diff:
-            queue_size += frames_skip + 1
+
+        d = 1 if self.use_diff else 0
+        fl = self.frames_lookback
+        fs = self.frames_skip
+
+        queue_size = fl + d + fs * (fl + d - 1)
 
         self.state = deque(maxlen=queue_size)
-        self.frame_counter = 1
-        self.use_diff = use_diff
 
     def start_episode(self):
-
-        logging.info('Starting environment..')
 
         info = self.env.reset(train_mode=True)[self.default_brain]
         visual_observation = info.visual_observations[0][0]
@@ -84,8 +77,6 @@ class Environment:
             self.state.append(visual_observation)
 
     def __apply_diff(self, frames):
-        if self.frames_lookback == 1:
-            raise Exception('Can not apply diff for a single frame')
 
         output = []
 
