@@ -36,6 +36,7 @@ class PolicyGradientAgent:
         self.REPLAY_BUFFER_SIZE = self.cfg.get('REPLAY_BUFFER_SIZE')
         self.BATCH_SIZE = self.cfg.get('BATCH_SIZE')
         self.SAVE_MODEL_STEPS = self.cfg.get('SAVE_MODEL_STEPS')
+        self.CHECKPOINT_FILE = self.cfg.get('CHECKPOINT_FILE')
 
     def learn(self):
 
@@ -156,7 +157,7 @@ class PolicyGradientAgent:
         assign_gs = tf.assign(self.GS, self.global_step)
         self.sess.run(assign_gs)
         path = os.path.join(
-            'output', self.experiment_id, 'checkpoints', CHECKPOINT_FILE)
+            'output', self.experiment_id, 'checkpoints', self.CHECKPOINT_FILE)
         self.saver.save(
             self.sess, path, self.global_step, write_meta_graph=False)
 
