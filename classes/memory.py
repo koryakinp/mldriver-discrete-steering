@@ -23,7 +23,7 @@ class Memory:
         self.rewards.append(r)
 
     def save_frame(self, f):
-        self.frames.append(np.transpose(f, [2, 0, 1]))
+        self.frames.append(np.transpose(f, [2, 1, 0]))
 
     def get_actions(self):
         return np.array(self.actions)
@@ -47,7 +47,8 @@ class Memory:
         return res
 
     def get_frames(self):
-        return np.swapaxes(self.frames, 1, 3)
+        frames = np.swapaxes(self.frames, 1, 3)
+        return np.rint(frames * 255)
 
     def clear(self):
         self.states = []

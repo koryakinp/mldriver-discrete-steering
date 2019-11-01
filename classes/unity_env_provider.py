@@ -1,5 +1,4 @@
 from mlagents.envs import UnityEnvironment
-from consts import *
 
 
 class UnityEnvironmentProvider:

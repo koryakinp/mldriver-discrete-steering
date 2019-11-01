@@ -4,7 +4,6 @@ from classes.config import Config
 from classes.unity_env_provider import UnityEnvironmentProvider
 import unittest
 from unittest.mock import Mock
-from consts import *
 import numpy as np
 from mlagents.envs import UnityEnvironment
 

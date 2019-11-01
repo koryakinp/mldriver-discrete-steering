@@ -1,5 +1,4 @@
 from collections import deque
-from consts import *
 import numpy as np
 import logging
 
@@ -22,8 +21,6 @@ class Environment:
         self.state = deque(maxlen=queue_size)
 
     def start_episode(self):
-
-        logging.info('Starting environment..')
 
         info = self.env.reset(train_mode=True)[self.default_brain]
         visual_observation = info.visual_observations[0][0]

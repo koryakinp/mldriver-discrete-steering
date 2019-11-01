@@ -1,9 +1,9 @@
-from consts import *
 from classes.memory import Memory
 from classes.policy import Policy
 from utils import *
 from pympler import muppy
 from pympler import summary
+from sklearn.utils import shuffle
 import numpy as np
 import tensorflow as tf
 import os
@@ -18,6 +18,7 @@ class PolicyGradientAgent:
 
     def __init__(self, env, cfg, experiment_id):
         self.env = env
+        self.cfg = cfg
         self.GS = tf.Variable(
             0, name='global_step', trainable=False, dtype=tf.int32)
         self.RECORD = tf.Variable(
@@ -32,58 +33,60 @@ class PolicyGradientAgent:
         self.summ_writer = tf.summary.FileWriter(
             os.path.join('output', experiment_id, 'summaries'),
             self.sess.graph)
-        self.batch_episode_counter = 0
+        self.REPLAY_BUFFER_SIZE = self.cfg.get('REPLAY_BUFFER_SIZE')
+        self.BATCH_SIZE = self.cfg.get('BATCH_SIZE')
+        self.SAVE_MODEL_STEPS = self.cfg.get('SAVE_MODEL_STEPS')
 
     def learn(self):
 
         while True:
 
-            step_result = self.env.start_episode()
+            experiences = []
 
-            self.memory.save_state(step_result['stacked_observation'])
-            self.memory.save_frame(step_result['visual_observation'])
+            for i in range(0, self.REPLAY_BUFFER_SIZE):
+                episode_experience = self.play_episode()
+                experiences.append(episode_experience)
+                step = self.global_step + i
+                reward = sum(episode_experience.rewards)
+                self.log('reward', reward, step, False)
 
-            while not step_result["done"]:
-                a, v = self.policy.play(
-                    step_result['stacked_observation'], self.sess)
+                if reward > self.record_run:
+                    frames = episode_experience.get_frames()
+                    self.log_gif('best_run', frames, step)
+                    self.record_run = reward
+                    self.sess.run(tf.assign(self.RECORD, self.record_run))
+                    logging.info('Record beaten: {0}'.format(self.record_run))
 
-                self.memory.save_value(v)
-                self.memory.save_action(a)
+                logging.info('Episode: {0} | reward: {1}'.format(step, reward))
 
-                step_result = self.env.step(a)
+            states, actions, values, advantages = self.get_experience_batches(
+                experiences)
 
-                self.memory.save_state(step_result['stacked_observation'])
-                self.memory.save_frame(step_result['visual_observation'])
-                self.memory.save_reward(step_result['reward'])
+            opt_results = []
 
-            logging.info('Episode: {0}'.format(self.global_step))
+            for i in range(len(actions)):
+                opt_res = self.policy.optimize(
+                    states[i], actions[i], values[i], advantages[i], self.sess)
 
-            opt_res = self.policy.optimize(
-                self.memory.get_states(),
-                self.memory.get_actions(),
-                self.memory.get_true_values(),
-                self.memory.get_advantages(), self.sess)
+                opt_results.append(opt_res)
 
-            episode_reward = sum(self.memory.rewards)
+            value_loss = np.array(
+                [q["value_loss"] for q in opt_results]).mean()
+            policy_loss = np.array(
+                [q["policy_loss"] for q in opt_results]).mean()
+            entropy = np.array(
+                [q["entropy"] for q in opt_results]).mean()
+            total_loss = np.array(
+                [q["total_loss"] for q in opt_results]).mean()
 
-            self.log('value_loss', opt_res["value_loss"], self.global_step)
-            self.log('policy_loss', opt_res["policy_loss"], self.global_step)
-            self.log('entropy', opt_res["entropy"], self.global_step)
-            self.log('total_loss', opt_res["total_loss"], self.global_step)
-            self.log('reward', episode_reward, self.global_step)
-
-            if episode_reward > self.record_run:
-                frames = self.memory.get_frames()
-                self.log_gif('best_run', frames, self.global_step)
-                self.record_run = episode_reward
-                self.sess.run(tf.assign(self.RECORD, self.record_run))
-                logging.info('Record beaten: {0}'.format(self.record_run))
-
-            self.memory.clear()
+            self.log('value_loss', value_loss, self.global_step)
+            self.log('policy_loss', policy_loss, self.global_step)
+            self.log('entropy', entropy, self.global_step)
+            self.log('total_loss', total_loss, self.global_step)
 
             print('=======')
 
-            if self.global_step % SAVE_MODEL_STEPS == 0:
+            if self.global_step % self.SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
 
@@ -96,7 +99,53 @@ class PolicyGradientAgent:
             all_objects = None
             sum1 = None
 
-            self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
+            self.global_step = self.sess.run(
+                tf.assign(self.GS, self.GS+self.REPLAY_BUFFER_SIZE))
+
+    def get_experience_batches(self, experiences):
+        states = np.concatenate(
+            [state.get_states() for state in experiences], axis=0)
+
+        actions = np.concatenate(
+            [action.get_actions() for action in experiences], axis=0)
+
+        values = np.concatenate(
+            [value.get_true_values() for value in experiences], axis=0)
+
+        advantages = np.concatenate(
+            [adv.get_advantages() for adv in experiences], axis=0)
+
+        states, actions, values, advantages = shuffle(
+            states, actions, values, advantages)
+
+        states = np.array_split(states, self.BATCH_SIZE)
+        actions = np.array_split(actions, self.BATCH_SIZE)
+        values = np.array_split(values, self.BATCH_SIZE)
+        advantages = np.array_split(advantages, self.BATCH_SIZE)
+
+        return states, actions, values, advantages
+
+    def play_episode(self):
+        memory = Memory(self.cfg)
+        step_result = self.env.start_episode()
+
+        memory.save_state(step_result['stacked_observation'])
+        memory.save_frame(step_result['visual_observation'])
+
+        while not step_result["done"]:
+            a, v = self.policy.play(
+                step_result['stacked_observation'], self.sess)
+
+            memory.save_value(v)
+            memory.save_action(a)
+
+            step_result = self.env.step(a)
+
+            memory.save_state(step_result['stacked_observation'])
+            memory.save_frame(step_result['visual_observation'])
+            memory.save_reward(step_result['reward'])
+
+        return memory
 
     def check_model(self):
         for trainable_variable in tf.trainable_variables():
@@ -111,12 +160,13 @@ class PolicyGradientAgent:
         self.saver.save(
             self.sess, path, self.global_step, write_meta_graph=False)
 
-    def log(self, tag, value, step):
+    def log(self, tag, value, step, write_line=True):
         summary = tf.Summary(
             value=[tf.Summary.Value(tag=tag, simple_value=value)])
         self.summ_writer.add_summary(summary, step)
-        msg = 'step: {0} | {1}: {2}'.format(step, tag, value)
-        logging.info(msg)
+        if write_line:
+            msg = 'step: {0} | {1}: {2}'.format(step, tag, value)
+            logging.info(msg)
 
     def log_gif(self, tag, images, step):
         images = np.array(images)

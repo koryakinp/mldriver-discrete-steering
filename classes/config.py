@@ -9,6 +9,7 @@ class Config:
         self.consts = {
             "OBS_SIZE": 128,
             "SAVE_MODEL_STEPS": 100,
+            "BATCH_SIZE": 64,
             "ENV_NAME": "environments/mldriver-discrete-steering",
             "CHECKPOINT_FILE": "mldriver.ckpt",
             "NUMBER_OF_ACTIONS": 3,
@@ -16,10 +17,10 @@ class Config:
             "LEARNING_RATE": None,
             "FRAMES_LOOKBACK": None,
             "FRAMES_SKIP": None,
-            "BUFFER_SIZE": None,
             "VALUE_LOSS_K": None,
             "ENTROPY_K": None,
-            "USE_DIFF": None
+            "USE_DIFF": None,
+            "REPLAY_BUFFER_SIZE": None,
         }
 
         if path is not None:
@@ -29,10 +30,10 @@ class Config:
                 self.set_value(values, "LEARNING_RATE")
                 self.set_value(values, "FRAMES_LOOKBACK")
                 self.set_value(values, "FRAMES_SKIP")
-                self.set_value(values, "BUFFER_SIZE")
                 self.set_value(values, "VALUE_LOSS_K")
                 self.set_value(values, "ENTROPY_K")
                 self.set_value(values, "USE_DIFF")
+                self.set_value(values, "REPLAY_BUFFER_SIZE")
 
     def get(self, key):
         if key not in self.consts:
