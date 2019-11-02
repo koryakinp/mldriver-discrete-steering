@@ -7,7 +7,7 @@ while getopts ":c:e:" opt; do
       pipenv run xvfb-run -a -s "-screen 0 128x128x24" -- python main.py $OPTARG
       ;;
     c)
-      cp "output/config/$OPTARG" consts.py
+      cp "output/config/$OPTARG" config.json
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2

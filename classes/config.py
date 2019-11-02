@@ -13,6 +13,8 @@ class Config:
             "ENV_NAME": "environments/mldriver-discrete-steering",
             "CHECKPOINT_FILE": "mldriver.ckpt",
             "NUMBER_OF_ACTIONS": 3,
+            "REWARD": 1,
+            "PENALTY": -100,
             "GAMMA": None,
             "LEARNING_RATE": None,
             "FRAMES_LOOKBACK": None,
@@ -26,6 +28,7 @@ class Config:
         if path is not None:
             with open(path) as f:
                 values = json.load(f)
+
                 self.set_value(values, "GAMMA")
                 self.set_value(values, "LEARNING_RATE")
                 self.set_value(values, "FRAMES_LOOKBACK")

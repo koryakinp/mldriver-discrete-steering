@@ -11,6 +11,8 @@ class Environment:
         self.frames_lookback = cfg.get('FRAMES_LOOKBACK')
         self.use_diff = cfg.get('USE_DIFF')
         self.default_brain = self.env.brain_names[0]
+        self.reward = cfg.get('REWARD')
+        self.penalty = cfg.get('PENALTY')
 
         d = 1 if self.use_diff else 0
         fl = self.frames_lookback
@@ -22,7 +24,13 @@ class Environment:
 
     def start_episode(self):
 
-        info = self.env.reset(train_mode=True)[self.default_brain]
+        config = {
+            "reward": self.reward,
+            "penalty": self.penalty
+        }
+
+        info = self.env.reset(
+            train_mode=True, config=config)[self.default_brain]
         visual_observation = info.visual_observations[0][0]
         self.__fill_state(visual_observation)
         done = info.local_done[0]
