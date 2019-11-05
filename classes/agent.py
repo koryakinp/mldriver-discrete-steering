@@ -21,10 +21,13 @@ class PolicyGradientAgent:
         self.cfg = cfg
         self.GS = tf.Variable(
             0, name='global_step', trainable=False, dtype=tf.int32)
+        self.BC = tf.Variable(
+            0, name='batch_count', trainable=False, dtype=tf.int32)
         self.RECORD = tf.Variable(
             0, name='record', trainable=False, dtype=tf.float32)
         self.policy = Policy(cfg)
         self.sess = get_session(experiment_id)
+        self.batch_count = self.sess.run(tf.assign(self.BC, self.BC+1))
         self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
         self.record_run = self.sess.run(self.RECORD)
         self.memory = Memory(cfg)
@@ -72,9 +75,9 @@ class PolicyGradientAgent:
                 opt_results.append(opt_res)
 
             value_loss = np.array(
-                [q["value_loss"] for q in opt_results]).mean()
+               [q["value_loss"] for q in opt_results]).mean()
             policy_loss = np.array(
-                [q["policy_loss"] for q in opt_results]).mean()
+               [q["policy_loss"] for q in opt_results]).mean()
             entropy = np.array(
                 [q["entropy"] for q in opt_results]).mean()
             total_loss = np.array(
@@ -87,7 +90,7 @@ class PolicyGradientAgent:
 
             print('=======')
 
-            if self.global_step % self.SAVE_MODEL_STEPS == 0:
+            if self.batch_count % self.SAVE_MODEL_STEPS == 0:
                 self.check_model()
                 self.save_model()
 
@@ -95,13 +98,19 @@ class PolicyGradientAgent:
                 sum1 = summary.summarize(all_objects)
                 summary.print_(sum1)
 
-            del opt_res
+                all_objects.clear()
+                sum1.clear()
 
-            all_objects = None
-            sum1 = None
+                del all_objects
+                del sum1
+
+            opt_results.clear()
+            experiences.clear()
 
             self.global_step = self.sess.run(
                 tf.assign(self.GS, self.GS+self.REPLAY_BUFFER_SIZE))
+            self.batch_count = self.sess.run(
+                tf.assign(self.BC, self.BC+1))
 
     def get_experience_batches(self, experiences):
         states = np.concatenate(
@@ -145,6 +154,8 @@ class PolicyGradientAgent:
             memory.save_state(step_result['stacked_observation'])
             memory.save_frame(step_result['visual_observation'])
             memory.save_reward(step_result['reward'])
+
+        del step_result
 
         return memory
 
