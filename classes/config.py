@@ -9,7 +9,7 @@ class Config:
         self.consts = {
             "OBS_SIZE": 128,
             "SAVE_MODEL_STEPS": 100,
-            "BATCH_SIZE": 64,
+            "BATCH_SIZE": 16,
             "ENV_NAME": "environments/mldriver-discrete-steering",
             "CHECKPOINT_FILE": "mldriver.ckpt",
             "NUMBER_OF_ACTIONS": 3,
