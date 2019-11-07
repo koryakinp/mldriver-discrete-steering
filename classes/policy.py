@@ -7,6 +7,7 @@ def conv(inputs, nf, ks, strides):
         inputs=inputs,
         filters=nf,
         kernel_size=ks,
+        padding='same',
         strides=(strides, strides),
         activation=tf.nn.relu)
 
@@ -39,11 +40,11 @@ class Policy():
         self.ADV = tf.placeholder(tf.float32, [None])
         self.R = tf.placeholder(tf.float32, [None])
 
-        h1 = conv(self.X, 32, 4, 2)
+        h1 = conv(self.X, 64, 3, 1)
         pool1 = maxpool(h1, 2, 2)
-        h2 = conv(pool1, 32, 4, 2)
+        h2 = conv(pool1, 64, 3, 1)
         pool2 = maxpool(h2, 2, 2)
-        h3 = conv(pool2, 32, 4, 1)
+        h3 = conv(pool2, 64, 3, 1)
         flat = tf.layers.flatten(h3)
         h4 = fc(flat, 512, act=tf.nn.elu)
         actor = fc(h4, num_of_actions, act=None)

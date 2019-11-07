@@ -7,7 +7,7 @@ class Config:
     def __init__(self, path):
 
         self.consts = {
-            "OBS_SIZE": 128,
+            "OBS_SIZE": 64,
             "SAVE_MODEL_STEPS": 100,
             "BATCH_SIZE": 16,
             "ENV_NAME": "environments/mldriver-discrete-steering",
