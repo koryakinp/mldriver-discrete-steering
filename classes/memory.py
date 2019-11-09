@@ -29,7 +29,9 @@ class Memory:
         return np.array(self.actions)
 
     def get_states(self):
-        return np.squeeze(self.states, axis=1)[:-1]
+        arr = np.array(self.states)
+        arr = np.squeeze(arr, axis=1)
+        return arr[:-1]
 
     def get_advantages(self):
         return np.array(self.rewards) + \
