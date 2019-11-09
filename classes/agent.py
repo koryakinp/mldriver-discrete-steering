@@ -170,9 +170,7 @@ class PolicyGradientAgent:
     def save_model(self):
         path = os.path.join(
             'output', self.experiment_id, 'checkpoints', self.CHECKPOINT_FILE)
-        self.saver.save(
-            self.sess, path, self.CN, write_meta_graph=False)
-
+        self.saver.save(self.sess, path, self.CN, write_meta_graph=False)
         self.sess.run(tf.assign(self.CN, self.CN + 1))
 
     def log(self, tag, value, step, write_line=True):
