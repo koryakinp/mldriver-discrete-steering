@@ -23,12 +23,15 @@ class PolicyGradientAgent:
             0, name='global_step', trainable=False, dtype=tf.int32)
         self.BC = tf.Variable(
             0, name='batch_count', trainable=False, dtype=tf.int32)
+        self.CN = tf.Variable(
+            0, name='checkpoint_count', trainable=False, dtype=tf.int32)
         self.RECORD = tf.Variable(
             0, name='record', trainable=False, dtype=tf.float32)
         self.policy = Policy(cfg)
         self.sess = get_session(experiment_id)
         self.batch_count = self.sess.run(tf.assign(self.BC, self.BC+1))
         self.global_step = self.sess.run(tf.assign(self.GS, self.GS+1))
+        self.checkpoint_number = self.sess.run(tf.assign(self.CN, self.CN+1))
         self.record_run = self.sess.run(self.RECORD)
         self.memory = Memory(cfg)
         self.saver = tf.train.Saver(max_to_keep=0)
@@ -165,12 +168,12 @@ class PolicyGradientAgent:
                 tf.check_numerics(trainable_variable, 'invalid tensor'))
 
     def save_model(self):
-        assign_gs = tf.assign(self.GS, self.global_step)
-        self.sess.run(assign_gs)
         path = os.path.join(
             'output', self.experiment_id, 'checkpoints', self.CHECKPOINT_FILE)
         self.saver.save(
-            self.sess, path, self.global_step, write_meta_graph=False)
+            self.sess, path, self.CN, write_meta_graph=False)
+
+        self.sess.run(tf.assign(self.CN, self.CN + 1))
 
     def log(self, tag, value, step, write_line=True):
         summary = tf.Summary(
