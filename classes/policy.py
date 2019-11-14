@@ -40,18 +40,16 @@ class Policy():
         self.ADV = tf.placeholder(tf.float32, [None])
         self.R = tf.placeholder(tf.float32, [None])
 
-        h1 = conv(self.X, 64, 4, 2)
-        pool1 = maxpool(h1, 2, 2)
-        h2 = conv(pool1, 64, 3, 1)
-        pool2 = maxpool(h2, 2, 2)
-        h3 = conv(pool2, 64, 3, 1)
-        flat = tf.layers.flatten(h3)
+        cv1 = conv(self.X, 32, 8, 4)
+        cv2 = conv(cv1, 64, 4, 2)
+        cv3 = conv(cv2, 64, 3, 1)
+        flat = tf.layers.flatten(cv3)
+        fc1 = fc(flat, 512)
+        fc2 = fc(fc1, 512)
+        fc3 = fc(fc2, 512)
 
-        actor_fc = fc(flat, 1024)
-        critic_fc = fc(flat, 1024)
-
-        actor = fc(actor_fc, num_of_actions, act=None)
-        critic = fc(critic_fc, 1, act=None)
+        actor = fc(fc3, num_of_actions, act=None)
+        critic = fc(fc3, 1, act=None)
 
         self.v0 = tf.squeeze(critic)
 
