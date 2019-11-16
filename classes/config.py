@@ -37,6 +37,8 @@ class Config:
                 self.set_value(values, "ENTROPY_K")
                 self.set_value(values, "USE_DIFF")
                 self.set_value(values, "REPLAY_BUFFER_SIZE")
+                self.set_value(values, "REWARD")
+                self.set_value(values, "PENALTY")
 
     def get(self, key):
         if key not in self.consts:
