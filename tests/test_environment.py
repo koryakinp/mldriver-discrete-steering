@@ -13,7 +13,12 @@ class Struct:
         self.__dict__.update(entries)
 
 
-def frames_helper(state, targets):
+def frames_helper(state, targets, use_diff=False):
+
+    if use_diff:
+        targets = np.array(targets)
+        targets = ((targets/255) + 1)/2
+
     for i in range(len(targets)):
         if not np.all(state[:, :, :, i] == targets[i]):
             return False
@@ -72,14 +77,14 @@ class TestEnvironment(unittest.TestCase):
 
         vo_mock = Mock()
         vo_mock.side_effect = [
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 17)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 23)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 2)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 11)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 9)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 14)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 10)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 19))
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.17)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.23)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.02)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.11)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.90)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.14)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.10)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.19))
         ]
 
         self.env_mock.step = vo_mock
@@ -95,41 +100,49 @@ class TestEnvironment(unittest.TestCase):
 
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [0, 0, 0, 0, 0]))
+            frames_helper(
+                res["stacked_observation"], [0, 0, 0, 0, 0], True))
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [0, 0, 0, 0, 6]))
+            frames_helper(
+                res["stacked_observation"], [0, 0, 0, 0, 0.06], True))
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [0, 0, 0, 6, -21]))
+            frames_helper(
+                res["stacked_observation"], [0, 0, 0, 6, -21], True))
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [0, 0, 6, -21, 9]))
+            frames_helper(
+                res["stacked_observation"], [0, 0, 6, -21, 9], True))
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [0, 6, -21, 9, -2]))
+            frames_helper(
+                res["stacked_observation"], [0, 6, -21, 9, -2], True))
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [6, -21, 9, -2, 5]))
+            frames_helper(
+                res["stacked_observation"], [6, -21, 9, -2, 5], True))
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [-21, 9, -2, 5, -4]))
+            frames_helper(
+                res["stacked_observation"], [-21, 9, -2, 5, -4], True))
         res = env.step(1)
         self.assertTrue(
-            frames_helper(res["stacked_observation"], [9, -2, 5, -4, 9]))
+            frames_helper(
+                res["stacked_observation"], [9, -2, 5, -4, 9], True))
 
     def test_step_4(self):
 
         vo_mock = Mock()
         vo_mock.side_effect = [
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 17)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 23)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 2)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 11)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 9)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 14)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 10)),
-            fill_step_mock(self.brain_name, np.full((10, 10, 1), 19))
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.17)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.23)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.20)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.11)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.90)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.14)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.10)),
+            fill_step_mock(self.brain_name, np.full((10, 10, 1), 0.19))
         ]
 
         self.env_mock.step = vo_mock

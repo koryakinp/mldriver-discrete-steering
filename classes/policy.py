@@ -45,11 +45,8 @@ class Policy():
         cv3 = conv(cv2, 64, 3, 1)
         flat = tf.layers.flatten(cv3)
         fc1 = fc(flat, 512)
-        fc2 = fc(fc1, 512)
-        fc3 = fc(fc2, 512)
-
-        actor = fc(fc3, num_of_actions, act=None)
-        critic = fc(fc3, 1, act=None)
+        actor = fc(fc1, num_of_actions, act=None)
+        critic = fc(fc1, 1, act=None)
 
         self.v0 = tf.squeeze(critic)
 

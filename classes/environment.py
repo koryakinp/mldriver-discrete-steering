@@ -95,5 +95,4 @@ class Environment:
 
         output = np.stack(output, axis=2)
         output = np.expand_dims(output, axis=0)
-        output = (output + 1)/2
         return output
