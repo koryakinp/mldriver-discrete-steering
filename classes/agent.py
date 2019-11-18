@@ -188,18 +188,15 @@ class PolicyGradientAgent:
         tensor_value = self.sess.run(tensor_summ)
         self.summ_writer.add_summary(tensor_to_gif_summ(tensor_value), step)
 
-    def save_gif(self, frames, values, rewards):
+    def save_gif(self, frames, values):
 
         frames = np.array(frames)
-        frames = np.transpose(frames, (0, 2, 3, 1))
-        frames = frames * 255
         frames = frames.astype('uint8')
         frames = list(frames)
 
         for index, frame in enumerate(frames):
-            value = 'Value: ' + str(round(values[index], 2))
-            reward = 'Reward: ' + str(round(rewards[index], 2))
-            frames[index] = apply_text(frame, [value, reward])
+            value = str(round(values[index], 2))
+            frames[index] = apply_text(frame, value)
 
         clip = mpy.ImageSequenceClip(frames, fps=1)
         folder_path = os.path.join('output', self.experiment_id, 'summaries')
@@ -212,7 +209,6 @@ def apply_text(frame, data):
     frame = np.squeeze(frame)
     img = Image.fromarray(frame)
     draw = ImageDraw.Draw(img)
-    for i in range(0, len(data)):
-        draw.text((2, i * 12 + 2), data[i], fill='white')
+    draw.text((2, 14), data, fill='white')
     frame = np.array(img)
     return np.expand_dims(frame, 2)

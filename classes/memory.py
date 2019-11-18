@@ -46,6 +46,14 @@ class Memory:
             res[idx] = reward + temp * self.GAMMA
             temp = res[idx]
 
+        # since V(s) is a sum of future rewards,
+        # the value of a terminal state is 0 by definition
+        # and since the reward, associated with the terminal
+        # state is the last element of self.rewards array,
+        # we have to push one more element to the array of V
+
+        res = np.append(res, 0)
+        res = np.flip(res)
         return res
 
     def get_frames(self):

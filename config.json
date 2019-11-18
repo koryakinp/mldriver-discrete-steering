@@ -1,5 +1,5 @@
 {
-    "GAMMA": 0.99,
+    "GAMMA": 0.90,
     "LEARNING_RATE": 0.00005,
     "FRAMES_LOOKBACK": 3,
     "FRAMES_SKIP": 3,
