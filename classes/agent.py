@@ -158,6 +158,14 @@ class PolicyGradientAgent:
             memory.save_frame(step_result['visual_observation'])
             memory.save_reward(step_result['reward'])
 
+            # need to save a estimated value of a terminal state
+            # in order to compute A(a,St)
+            if step_result["done"]:
+                a, v = self.policy.play(
+                    step_result['stacked_observation'], self.sess)
+
+                memory.save_value(v)
+
         del step_result
 
         return memory

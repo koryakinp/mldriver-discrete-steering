@@ -34,10 +34,15 @@ class Memory:
         return arr[:-1]
 
     def get_advantages(self):
-        return np.array(self.rewards) + \
-            np.full(len(self.rewards), self.GAMMA) * \
-            np.append(self.values[1:], 0) - \
-            np.array(self.values)
+
+        total_actions = len(self.actions)
+        adv = np.zeros(total_actions)
+        for i in range(total_actions):
+            next_value = self.values[i + 1]
+            curr_value = self.values[i]
+            adv[i] = self.rewards[i] + self.GAMMA * next_value - curr_value
+
+        return adv
 
     def get_true_values(self):
         temp = 0
@@ -46,15 +51,7 @@ class Memory:
             res[idx] = reward + temp * self.GAMMA
             temp = res[idx]
 
-        # since V(s) is a sum of future rewards,
-        # the value of a terminal state is 0 by definition
-        # and since the reward, associated with the terminal
-        # state is the last element of self.rewards array,
-        # we have to push one more element to the array of V
-
-        res = np.append(res, 0)
-        res = np.flip(res)
-        return res
+        return np.flip(res)
 
     def get_frames(self):
         frames = np.swapaxes(self.frames, 1, 3)
