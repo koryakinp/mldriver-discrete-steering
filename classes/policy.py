@@ -73,7 +73,7 @@ class Policy():
             self.entropy * entropy_coefficient
 
         self.adam = tf.train.RMSPropOptimizer(
-            learning_rate).minimize(self.loss)
+            learning_rate, decay=0.99).minimize(self.loss)
 
     def play(self, ob, sess):
         a, v = sess.run([self.a0, self.v0], {self.X: ob})
