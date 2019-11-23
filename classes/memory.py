@@ -31,20 +31,21 @@ class Memory:
     def get_states(self):
         arr = np.array(self.states)
         arr = np.squeeze(arr, axis=1)
-        return arr[:-1]
+        return arr
 
     def get_advantages(self):
 
         total_actions = len(self.actions)
         adv = np.zeros(total_actions)
+        discounted_rewards = self.get_discounted_rewards()
+
         for i in range(total_actions):
-            next_value = self.values[i + 1]
-            curr_value = self.values[i]
-            adv[i] = self.rewards[i] + self.GAMMA * next_value - curr_value
+            dr = discounted_rewards[i:]
+            adv[i] = sum(dr) - self.values[i]
 
         return adv
 
-    def get_true_values(self):
+    def get_discounted_rewards(self):
         temp = 0
         res = np.zeros(len(self.rewards))
         for (idx, reward) in enumerate(self.rewards[::-1]):

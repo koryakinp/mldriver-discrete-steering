@@ -117,16 +117,16 @@ class PolicyGradientAgent:
 
     def get_experience_batches(self, experiences):
         states = np.concatenate(
-            [state.get_states() for state in experiences], axis=0)
+            [exp.get_states() for exp in experiences], axis=0)
 
         actions = np.concatenate(
-            [action.get_actions() for action in experiences], axis=0)
+            [exp.get_actions() for exp in experiences], axis=0)
 
         values = np.concatenate(
-            [value.get_true_values() for value in experiences], axis=0)
+            [exp.get_discounted_rewards() for exp in experiences], axis=0)
 
         advantages = np.concatenate(
-            [adv.get_advantages() for adv in experiences], axis=0)
+            [exp.get_advantages() for exp in experiences], axis=0)
 
         states, actions, values, advantages = shuffle(
             states, actions, values, advantages)
@@ -154,17 +154,14 @@ class PolicyGradientAgent:
 
             step_result = self.env.step(a)
 
-            memory.save_state(step_result['stacked_observation'])
+            if step_result["done"]:
+                print("Done!")
+
+            if not step_result["done"]:
+                memory.save_state(step_result['stacked_observation'])
+
             memory.save_frame(step_result['visual_observation'])
             memory.save_reward(step_result['reward'])
-
-            # need to save a estimated value of a terminal state
-            # in order to compute A(a,St)
-            if step_result["done"]:
-                a, v = self.policy.play(
-                    step_result['stacked_observation'], self.sess)
-
-                memory.save_value(v)
 
         del step_result
 

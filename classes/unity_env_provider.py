@@ -20,6 +20,8 @@ class UnityEnvironmentProvider:
                 worker_id += 1
                 msg = 'Trying re-create UnityEnvironment with worker_id {0}'
                 print(msg.format(worker_id))
-                raise
+
+        if worker_id >= 100:
+            raise Exception("Can not create UnityEnvironment")
 
         return env
