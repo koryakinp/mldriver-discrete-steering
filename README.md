@@ -24,13 +24,13 @@ Custom build [MLDriver](https://github.com/koryakinp/MLDriver) <b>Unity Environm
 </p>
 
  - Input Tensor with Dimensions `[64,64,5]`
- - Convolutional Layer with filter size `[8,8]` and strides `[4,4]` and ReLU activation
- - Convolutional Layer with filter size `[4,4]` and strides `[2,2]` and ReLU activation
- - Convolutional Layer with filter size `[3,3]` and strides `[1,1]` and ReLU activation
- - Fully-Connected Layer with 1024 neurons and ReLU activation
- - Fully-Connected Layer with 512 neurons and ReLU activation
- - Fully-Connected Layer with 256 neurons and ReLU activation
- - Policy Head with 3 output neurons and Value head with 1 output neurons
+ - Convolutional Layer with 32 kernels of size `[8,8]`, strides `[4,4]` and ReLU activation
+ - Convolutional Layer with 64 kernels of size `[4,4]`, strides `[2,2]` and ReLU activation
+ - Convolutional Layer with 64 kernels of size `[3,3]`, strides `[1,1]` and ReLU activation
+ - Fully-Connected Layer with <b>1024</b> neurons and ReLU activation
+ - Fully-Connected Layer with <b>512</b> neurons and ReLU activation
+ - Fully-Connected Layer with <b>256</b> neurons and ReLU activation
+ - Policy Head (Actor) with <b>3</b> output neurons and Value Head (Critic) with <b>1</b> output neurons
 
  ## Results
 
