@@ -2,12 +2,16 @@
 
 ## Environment
 
-Custom build [MLDriver](https://github.com/koryakinp/MLDriver) Unity Environment
+Custom build [MLDriver](https://github.com/koryakinp/MLDriver) <b>Unity Environment</b>
+
+#### Links
 
  - [Linux Build](https://github.com/koryakinp/MLDriver/releases/download/5.1/MLDriver_Linux_x86_64.zip)
  - [MAC OS build](https://github.com/koryakinp/MLDriver/releases/download/5.1/MLDriver_MAC_OS_X.zip)
  - [Windows Build](https://github.com/koryakinp/MLDriver/releases/download/5.1/MLDriver_Windows_x86_64.zip)
  - [Web Build](https://koryakinp.github.io/MLDriver)
+
+#### Environment Parameters:
 
  - Observation Space: `[64, 64, 1]`
  - Action Space: `[3]`
