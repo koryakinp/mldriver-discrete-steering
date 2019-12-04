@@ -30,5 +30,5 @@
 
 <p align="center">
   <b>Sample Run</b><br>
-  <img src="docs/run.gif">
+  <img src="docs/run.gif" width="320" height="320">
 </p>
