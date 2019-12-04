@@ -18,3 +18,9 @@
  - Policy Head with 3 output neurons and Value head with 1 output neurons
 
  ## Results
+
+<p align="center">
+  <b>Smothed average episode reward vs number of training steps</b><br>
+  <br><br>
+  <img src="docs/reward-chart.png">
+</p>
