@@ -6,7 +6,7 @@
  - Action Space: `[3]`
 
 ## Neural Network Architecture
-![Neural Network Architecture](docs/nn_diagram.png)
+![Neural Network Architecture](docs/diagram.png)
 
  - Input Tensor with Dimensions `[64,64,5]`
  - Convolutional Layer with filter size `[8,8]` and strides `[4,4]` and ReLU activation
@@ -16,3 +16,5 @@
  - Fully-Connected Layer with 512 neurons and ReLU activation
  - Fully-Connected Layer with 256 neurons and ReLU activation
  - Policy Head with 3 output neurons and Value head with 1 output neurons
+
+ ## Results
