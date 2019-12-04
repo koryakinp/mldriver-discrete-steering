@@ -16,7 +16,7 @@ Custom build [MLDriver](https://github.com/koryakinp/MLDriver) <b>Unity Environm
  - Observation Space: `[64, 64, 1]`
  - Action Space: `[3]`
 
-## Model
+## Agent
 
 <p align="center">
   <b>Neural Network Architecture</b><br>
@@ -50,3 +50,4 @@ Pavel Koryakin <koryakinp@koryakinp.com>
 ## Acknowledgments
 - [Chris Yoon, Understanding Actor Critic Methods and A2C](https://towardsdatascience.com/understanding-actor-critic-methods-931b97b6df3f)
 - [Daniel Seita, Actor-Critic Methods: A3C and A2C](https://danieltakeshi.github.io/2018/06/28/a2c-a3c/)
+- [Mostafa Gamal, A Clearer and Simpler Synchronous Advantage Actor Critic (A2C) Implementation in TensorFlow](https://github.com/MG2033/A2C)
