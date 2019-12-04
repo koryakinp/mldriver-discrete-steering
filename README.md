@@ -32,3 +32,10 @@
   <b>Sample Run</b><br>
   <img src="docs/run.gif" width="320" height="320">
 </p>
+
+## Authors
+Pavel koryakin <koryakinp@koryakinp.com>
+
+## Acknowledgments
+- [Chris Yoon, Understanding Actor Critic Methods and A2C](https://towardsdatascience.com/understanding-actor-critic-methods-931b97b6df3f)
+- [Daniel Seita, Actor-Critic Methods: A3C and A2C](https://danieltakeshi.github.io/2018/06/28/a2c-a3c/)
