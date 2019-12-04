@@ -7,7 +7,6 @@ import numpy as np
 import uuid
 from PIL import Image
 import os.path as path
-import sys
 
 
 def get_experiment_id():
