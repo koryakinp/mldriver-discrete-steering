@@ -5,8 +5,12 @@
  - Observation Space: `[64, 64, 1]`
  - Action Space: `[3]`
 
-## Neural Network Architecture
-![Neural Network Architecture](docs/diagram.png)
+## Model
+
+<p align="center">
+  <b>Neural Network Architecture</b><br>
+  <img src="docs/diagram.png">
+</p>
 
  - Input Tensor with Dimensions `[64,64,5]`
  - Convolutional Layer with filter size `[8,8]` and strides `[4,4]` and ReLU activation
@@ -21,6 +25,10 @@
 
 <p align="center">
   <b>Smothed average episode reward vs number of training steps</b><br>
-  <br><br>
   <img src="docs/reward-chart.png">
+</p>
+
+<p align="center">
+  <b>Sample Run</b><br>
+  <img src="docs/run.gif">
 </p>
