@@ -45,7 +45,7 @@ Custom build [MLDriver](https://github.com/koryakinp/MLDriver) <b>Unity Environm
 </p>
 
 ## Authors
-Pavel koryakin <koryakinp@koryakinp.com>
+Pavel Koryakin <koryakinp@koryakinp.com>
 
 ## Acknowledgments
 - [Chris Yoon, Understanding Actor Critic Methods and A2C](https://towardsdatascience.com/understanding-actor-critic-methods-931b97b6df3f)
